@@ -1,0 +1,42 @@
+appId: app.puzzle.padaku
+---
+# 1. Take screenshot of Info Alert showing 4-letter word count
+- takeScreenshot: "screenshots/padaku/03_info_alert_4_letters"
+
+# 2. Dismiss Info Alert by tapping Continue
+- tapOn: "ಮುಂದುವರಿಸು"
+
+# 3. Execute walkthrough tutorial
+- runFlow: walkthrough.yaml
+
+# 4. Type a 4-letter guess (example: ಆಟಗಾರ -> ಆ, ಟ, ಗ, ರ)
+# 'ಆ' is on the Shift layer, so toggle Shift on, tap 'ಆ', then toggle Shift off
+- tapOn:
+    id: "key-Shift"
+- tapOn:
+    id: "key-ಆ"
+- tapOn:
+    id: "key-Shift"
+- tapOn:
+    id: "key-ಟ"
+- tapOn:
+    id: "key-ಗ"
+- tapOn:
+    id: "key-Shift"
+- tapOn:
+    id: "key-ಆ"
+- tapOn:
+    id: "key-Shift"
+- tapOn:
+    id: "key-ರ"
+- takeScreenshot: "screenshots/padaku/08_typed_4_letters"
+
+# 5. Submit guess
+- tapOn:
+    id: "key-Enter"
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "screenshots/padaku/09_submitted_4_letters"
+
+# 6. Fetch live solution from API and play it to win
+- runFlow: play_solution/play_solution.yaml

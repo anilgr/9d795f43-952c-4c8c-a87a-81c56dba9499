@@ -1,0 +1,5 @@
+appId: app.puzzle.padaku
+---
+# Toggle Shift key on the custom keyboard
+- tapOn:
+    id: "key-Shift"

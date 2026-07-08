@@ -1,0 +1,21 @@
+appId: app.puzzle.padaku
+---
+# Click through 3-step interactive tutorial on first play
+# Step 1: Keyboard instruction
+- assertVisible: "ಆಮೇಲೆ ?"
+- takeScreenshot: "screenshots/padaku/04_walkthrough_step_1"
+- tapOn: "ಆಮೇಲೆ ?"
+
+# Step 2: Grid row instruction
+- assertVisible: "ಆಮೇಲೆ ?"
+- takeScreenshot: "screenshots/padaku/05_walkthrough_step_2"
+- tapOn: "ಆಮೇಲೆ ?"
+
+# Step 3: Enter key instruction
+- assertVisible: "ಸರಿ"
+- takeScreenshot: "screenshots/padaku/06_walkthrough_step_3"
+- tapOn: "ಸರಿ"
+
+# Verify game screen ready
+- assertVisible: "ಪದಕು"
+- takeScreenshot: "screenshots/padaku/07_game_ready"

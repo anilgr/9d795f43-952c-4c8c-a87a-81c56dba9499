@@ -1,0 +1,104 @@
+name: "iOS: E2E Tests & Screenshots (Maestro Public CI)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      flow_path:
+        description: "Path to Maestro test or flow file"
+        required: true
+        default: ".maestro/padaku/padaku_test.yaml"
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test_ios_simulator:
+    runs-on: macos-latest
+    env:
+      # Skip JS bundling on CI because main.jsbundle is pre-bundled on Windows and checked in
+      SKIP_BUNDLING: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        uses: ./.github/actions/xcode-latest
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Boot iOS Simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -v 'Watch\|TV\|iPad' | grep 'iPhone' | head -n 1 | sed -E 's/.*(([0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12})).*/\1/')
+          echo "Selected iPhone Simulator UDID: $UDID"
+          xcrun simctl boot $UDID || true
+          xcrun simctl bootstatus $UDID -b
+          echo "MAESTRO_DEVICE_UDID=$UDID" >> $GITHUB_ENV
+
+      - name: Cache CocoaPods and DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ios/build
+          key: ${{ runner.os }}-pods-and-build-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-and-build-
+
+      - name: Install CocoaPods
+        run: |
+          cd $GITHUB_WORKSPACE/ios
+          pod install --repo-update
+
+      - name: Build iOS Release App for Simulator
+        run: |
+          cd $GITHUB_WORKSPACE/ios
+          # Compile Release build specifically for simulator with SKIP_BUNDLING=true
+          xcodebuild -workspace Padaku.xcworkspace \
+            -scheme Padaku \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            build
+
+      - name: Ensure Bundle & Assets inside Simulator App
+        run: |
+          APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
+          echo "Copying offline main.jsbundle and assets directly into $APP_PATH"
+          cp ios/main.jsbundle "$APP_PATH/" || true
+          cp -R ios/assets "$APP_PATH/" || true
+
+      - name: Install App onto Simulator
+        run: |
+          APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
+          echo "Installing $APP_PATH to simulator $MAESTRO_DEVICE_UDID"
+          xcrun simctl install $MAESTRO_DEVICE_UDID "$APP_PATH"
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Run Maestro Tests
+        run: |
+          mkdir -p screenshots
+          FLOW_TARGET="${{ github.event.inputs.flow_path || '.maestro/padaku/padaku_test.yaml' }}"
+          echo "Executing Maestro flow: $FLOW_TARGET"
+          maestro test "$FLOW_TARGET" --device $MAESTRO_DEVICE_UDID
+
+      - name: Upload Screenshot & Log Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-maestro-screenshots-and-logs
+          path: |
+            screenshots/
+            ~/.maestro/tests/
+          retention-days: 7

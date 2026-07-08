@@ -1,0 +1,14 @@
+appId: app.puzzle.padaku
+---
+# Setup: Launch app with clean state and navigate to Padaku
+- launchApp:
+    clearState: true
+    permissions:
+      notifications: allow
+
+# Verify home screen list cards loaded
+- assertVisible: "ಆಡು"
+- takeScreenshot: "screenshots/padaku/01_home_screen"
+
+# Tap Play button on Padaku card (first item)
+- tapOn: "ಆಡು"

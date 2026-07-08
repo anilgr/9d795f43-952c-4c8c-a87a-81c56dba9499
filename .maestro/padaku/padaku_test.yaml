@@ -1,0 +1,26 @@
+appId: app.puzzle.padaku
+---
+# 1. Setup: Launch app and navigate from home list to Padaku
+- runFlow: navigate.yaml
+
+# 2. Reusable step: Dismiss initial Help modal
+- runFlow: ../shared/dismiss_help_modal.yaml
+
+# 3. Wait for Info Alert to appear, take screenshot, and dismiss it
+- assertVisible: "ಮುಂದುವರಿಸು"
+
+# 4. Branching: Execute matching word-length subflow based on Info Alert message
+- runFlow:
+    when:
+      visible: ".*೩ ಅಕ್ಷರಗಳಿವೆ.*"
+    file: play_3_letters.yaml
+
+- runFlow:
+    when:
+      visible: ".*೪ ಅಕ್ಷರಗಳಿವೆ.*"
+    file: play_4_letters.yaml
+
+- runFlow:
+    when:
+      visible: ".*೫ ಅಕ್ಷರಗಳಿವೆ.*"
+    file: play_5_letters.yaml

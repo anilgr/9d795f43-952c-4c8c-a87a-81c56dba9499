@@ -1,0 +1,33 @@
+appId: app.puzzle.padaku
+---
+# Reusable shared flow: Fetch today's live answer from API and dynamically type up to 12 characters accurately
+
+# 1. Fetch today's puzzle answer via JS http client and export character variables + counter
+- runScript: get_solution.js
+
+# 2. Repeat exactly 12 times, delegating step preparation and JsConsole logging to external script
+- repeat:
+    times: 12
+    commands:
+      - runScript: prepare_tap.js
+      - runFlow:
+          when:
+            true: ${output.hasChar == 'true' && output.currentShift == 'true'}
+          file: toggle_shift.yaml
+      - runFlow:
+          when:
+            true: ${output.hasChar == 'true'}
+          commands:
+            - tapOn:
+                id: "key-${output.currentChar}"
+      - runFlow:
+          when:
+            true: ${output.hasChar == 'true' && output.currentShift == 'true'}
+          file: toggle_shift.yaml
+
+# 3. Submit winning guess
+- tapOn:
+    id: "key-Enter"
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "screenshots/padaku/10_game_won_modal"
