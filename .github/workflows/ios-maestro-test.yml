@@ -1,8 +1,6 @@
 name: "iOS: E2E Tests & Screenshots (Maestro Public CI)"
 
 on:
-  push:
-    branches: [ master, main ]
   workflow_dispatch:
     inputs:
       flow_path:
