@@ -12,7 +12,7 @@ on:
 
 jobs:
   test_ios_simulator:
-    runs-on: macos-latest
+    runs-on: macos-14
     env:
       # Skip JS bundling on CI because main.jsbundle is pre-bundled on Windows and checked in
       SKIP_BUNDLING: true
