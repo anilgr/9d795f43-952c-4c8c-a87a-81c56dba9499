@@ -6,10 +6,15 @@ runs:
   steps:
     - name: Select latest Xcode
       run: |
-        echo "🔍 Looking for Xcode latest..."
-        # Find the highest version available
-        xcode=$(ls /Applications | grep Xcode | sort -Vr | head -n 1)
-        echo "Using: $xcode"
+        echo "🔍 Checking available Xcodes..."
+        ls /Applications | grep Xcode || true
+        # If Xcode 15.4 is installed (macos-14 runner), use it for maximum build speed & clean React Native C++ compatibility
+        if [ -d "/Applications/Xcode_15.4.app" ]; then
+          xcode="Xcode_15.4.app"
+        else
+          xcode=$(ls /Applications | grep Xcode | sort -Vr | head -n 1)
+        fi
+        echo "Selected Xcode: $xcode"
         sudo xcode-select -s "/Applications/$xcode/Contents/Developer"
       shell: bash
 

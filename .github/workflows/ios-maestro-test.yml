@@ -60,12 +60,17 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/ios
           # Compile Release build specifically for simulator with SKIP_BUNDLING=true
+          # ONLY_ACTIVE_ARCH=YES and -arch arm64 cut build time in half by only building Apple Silicon simulator slice
+          # IPHONEOS_DEPLOYMENT_TARGET=16.0 satisfies Xcode 16 CxxStdlib bridge requirements
           xcodebuild -workspace Padaku.xcworkspace \
             -scheme Padaku \
             -configuration Release \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
+            ONLY_ACTIVE_ARCH=YES \
+            -arch arm64 \
+            IPHONEOS_DEPLOYMENT_TARGET=16.0 \
             build
 
       - name: Ensure Bundle & Assets inside Simulator App
