@@ -1,6 +1,8 @@
-name: "iOS: E2E Tests & Screenshots (Maestro Public CI)"
+name: "iOS: E2E Tests & Screenshots (Maestro)"
 
 on:
+  push:
+    branches: [ master, main ]
   workflow_dispatch:
     inputs:
       flow_path:
@@ -13,6 +15,8 @@ on:
 jobs:
   test_ios_simulator:
     runs-on: macos-14
+    permissions:
+      contents: write
     env:
       # Skip JS bundling on CI because main.jsbundle is pre-bundled on Windows and checked in
       SKIP_BUNDLING: true
@@ -119,3 +123,16 @@ jobs:
             screenshots/
             ~/.maestro/tests/
           retention-days: 7
+
+      - name: Commit & Push Test Artifacts to Repo
+        if: always()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p maestro_test_logs
+          cp -R ~/.maestro/tests/* maestro_test_logs/ || true
+          git add -f screenshots/ maestro_test_logs/ || true
+          if ! git diff --cached --quiet; then
+            git commit -m "test(artifacts): update iOS simulator screenshots and logs [skip ci]"
+            git push origin HEAD:${{ github.ref }} || true
+          fi
