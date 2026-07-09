@@ -1,0 +1,146 @@
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, id:F057F93D-2562-418F-AB4C-35C3B965CD8D, OS:17.0.1, name:iPhone 15 Pro }
+{ platform:iOS Simulator, id:F057F93D-2562-418F-AB4C-35C3B965CD8D, OS:17.0.1, name:iPhone 15 Pro }
+2026-07-09 14:19:18.832 xcodebuild[28142:84461]  iOSSimulator: F057F93D-2562-418F-AB4C-35C3B965CD8D: Failed to launch app with identifier: dev.mobile.maestro-driver-iosUITests.xctrunner and options: {
+    "activate_suspended" = 1;
+    arguments =     (
+    );
+    environment =     {
+        "APP_DISTRIBUTOR_ID_OVERRIDE" = "com.apple.AppStore";
+        "CA_ASSERT_MAIN_THREAD_TRANSACTIONS
+
+*** If you believe this error represents a bug, please attach the result bundle at /var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/maestro_xctestrunner_xcodebuild_output3737395827933232613/Logs/Test/Test-maestro-driver-ios-2026.07.09_14-16-49-+0000.xcresult
+
+
+Test session results, code coverage, and logs:
+	/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/maestro_xctestrunner_xcodebuild_output3737395827933232613/Logs/Test/Test-maestro-driver-ios-2026.07.09_14-16-49-+0000.xcresult
+
+Testing started
+0gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator:/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator/PackageFrameworks:/Applications/Xcode_16.2.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks";
+        "DYLD_INSERT_LIBRARIES" = "/usr/lib/libRPAC.dylib:/usr/lib/libRPAC.dylib:/usr/lib/libRPAC.dylib";
+        "DYLD_LIBRARY_PATH" = "/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator:/Applications/Xcode_16.2.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib:/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator:/Applications/Xcode_16.2.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib";
+        "LLVM_PROFILE_FILE" = "/dev/null";
+        NSUnbufferedIO = YES;
+        "OS_ACTIVITY_DT_MODE" = YES;
+        "PERFC_ENABLE_EXTENDED_DIAGNOSTIC_FORMAT" = 1;
+        "PERFC_ENABLE_PROFILE_MODE" = 1;
+        "PERFC_RESET_INSERT_LIBRARIES" = 1;
+        "PERFC_SUPPRESS_SYSTEM_REPORTS" = 1;
+        PORT = 56419;
+        "RUN_DESTINATION_DEVICE_NAME" = "iPhone 15 Pro";
+        "RUN_DESTINATION_DEVICE_PLATFORM_IDENTIFIER" = "com.apple.platform.iphonesimulator";
+        "RUN_DESTINATION_DEVICE_UDID" = "F057F93D-2562-418F-AB4C-35C3B965CD8D";
+        "SQLITE_ENABLE_THREAD_ASSERTIONS" = 1;
+        TERM = dumb;
+        "XCODE_SCHEME_NAME" = "maestro-driver-ios";
+        XCTestBundlePath = "PlugIns/maestro-driver-iosUITests.xctest";
+        XCTestConfigurationFilePath = "";
+        XCTestSessionIdentifier = "55C2F434-6533-4EA8-9E03-798464BB7D56";
+        "__XCODE_BUILT_PRODUCTS_DIR_PATHS" = "/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator";
+        "__XPC_DYLD_FRAMEWORK_PATH" = "/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator:/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator";
+        "__XPC_DYLD_LIBRARY_PATH" = "/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator:/var/folders/g3/pffjr_y96bq06blnkf72x_hw0000gn/T/F057F93D-2562-418F-AB4C-35C3B965CD8D8324250942168607945/Debug-iphonesimulator";
+        "__XPC_LLVM_PROFILE_FILE" = "/dev/null";
+    };
+    stderr = "/dev/ttys000";
+    stdout = "/dev/ttys000";
+    "terminate_running_process" = 1;
+    "wait_for_debugger" = 1;
+} (error = Error Domain=FBSOpenApplicationServiceErrorDomain Code=1 "Simulator device failed to launch dev.mobile.maestro-driver-iosUITests.xctrunner." UserInfo={NSLocalizedDescription=Simulator device failed to launch dev.mobile.maestro-driver-iosUITests.xctrunner., NSUnderlyingError=0x600000d94480 {Error Domain=FBSOpenApplicationServiceErrorDomain Code=1 "The request to open "dev.mobile.maestro-driver-iosUITests.xctrunner" failed." UserInfo={BSErrorCodeDescription=RequestDenied, NSLocalizedDescription=The request to open "dev.mobile.maestro-driver-iosUITests.xctrunner" failed., NSUnderlyingError=0x600000d95ef0 {Error Domain=FBSOpenApplicationErrorDomain Code=4 "Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard." UserInfo={BSErrorCodeDescription=NotFound, NSLocalizedFailureReason=Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard.}}, FBSOpenApplicationRequestID=0x6752, NSLocalizedFailureReason=The request was denied by service delegate (SBMainWorkspace) for reason: NotFound ("Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard").}}, NSLocalizedFailureReason=The request was denied by service delegate (SBMainWorkspace) for reason: NotFound ("Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard")., FBSOpenApplicationRequestID=0x6752, SimCallingSelector=launchApplicationWithID:options:pid:error:, BSErrorCodeDescription=RequestDenied})
+2026-07-09 14:19:18.840 xcodebuild[28142:75715] [MT] IDELaunchReport: 5c8359aff2ef1200:5c8359aff2ef1200: Finished with error: Simulator device failed to launch dev.mobile.maestro-driver-iosUITests.xctrunner.
+Domain: FBSOpenApplicationServiceErrorDomain
+Code: 1
+Failure Reason: The request was denied by service delegate (SBMainWorkspace) for reason: NotFound ("Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard").
+User Info: {
+    BSErrorCodeDescription = RequestDenied;
+    DVTErrorCreationDateKey = "2026-07-09 14:19:18 +0000";
+    FBSOpenApplicationRequestID = 0x6752;
+    IDERunOperationFailingWorker = IDELaunchiPhoneSimulatorLauncher;
+    SimCallingSelector = "launchApplicationWithID:options:pid:error:";
+}
+--
+The request to open "dev.mobile.maestro-driver-iosUITests.xctrunner" failed.
+Domain: FBSOpenApplicationServiceErrorDomain
+Code: 1
+Failure Reason: The request was denied by service delegate (SBMainWorkspace) for reason: NotFound ("Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard").
+User Info: {
+    BSErrorCodeDescription = RequestDenied;
+    FBSOpenApplicationRequestID = 0x6752;
+}
+--
+The operation couldn’t be completed. Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard.
+Domain: FBSOpenApplicationErrorDomain
+Code: 4
+Failure Reason: Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard.
+User Info: {
+    BSErrorCodeDescription = NotFound;
+}
+--
+2026-07-09 14:19:18.840 xcodebuild[28142:75715] [MT] IDELaunchReport: 5c8359aff2ef1200:5c8359aff2ef1200: com.apple.dt.IDERunOperationWorkerFinished {
+    "device_identifier" = "F057F93D-2562-418F-AB4C-35C3B965CD8D";
+    "device_model" = "iPhone16,1";
+    "device_osBuild" = "17.0.1 (21A342)";
+    "device_platform" = "com.apple.platform.iphonesimulator";
+    "device_thinningType" = "iPhone16,1";
+    "dvt_coredevice_version" = "397.28";
+    "dvt_coresimulator_version" = "993.7";
+    "dvt_mobiledevice_version" = "1759.40.2.100.1";
+    "launchSession_schemeCommand" = Test;
+    "launchSession_state" = 1;
+    "launchSession_targetArch" = arm64;
+    "operation_duration_ms" = 13068;
+    "operation_errorCode" = 1;
+    "operation_errorDomain" = FBSOpenApplicationServiceErrorDomain;
+    "operation_errorWorker" = IDELaunchiPhoneSimulatorLauncher;
+    "operation_name" = IDERunOperationWorkerGroup;
+    "param_debugger_attachToExtensions" = 0;
+    "param_debugger_attachToXPC" = 0;
+    "param_debugger_type" = 1;
+    "param_destination_isProxy" = 0;
+    "param_destination_platform" = "com.apple.platform.iphonesimulator";
+    "param_diag_113575882_enable" = 0;
+    "param_diag_MainThreadChecker_stopOnIssue" = 0;
+    "param_diag_MallocStackLogging_enableDuringAttach" = 0;
+    "param_diag_MallocStackLogging_enableForXPC" = 0;
+    "param_diag_allowLocationSimulation" = 1;
+    "param_diag_checker_tpc_enable" = 0;
+    "param_diag_gpu_frameCapture_enable" = 3;
+    "param_diag_gpu_shaderValidation_enable" = 0;
+    "param_diag_gpu_validation_enable" = 1;
+    "param_diag_guardMalloc_enable" = 0;
+    "param_diag_memoryGraphOnResourceException" = 0;
+    "param_diag_mtc_enable" = 0;
+    "param_diag_queueDebugging_enable" = 1;
+    "param_diag_runtimeProfile_generate" = 0;
+    "param_diag_sanitizer_asan_enable" = 0;
+    "param_diag_sanitizer_tsan_enable" = 0;
+    "param_diag_sanitizer_tsan_stopOnIssue" = 0;
+    "param_diag_sanitizer_ubsan_enable" = 0;
+    "param_diag_sanitizer_ubsan_stopOnIssue" = 0;
+    "param_diag_showNonLocalizedStrings" = 0;
+    "param_diag_viewDebugging_enabled" = 0;
+    "param_diag_viewDebugging_insertDylibOnLaunch" = 0;
+    "param_install_style" = 2;
+    "param_launcher_UID" = 2;
+    "param_launcher_allowDeviceSensorReplayData" = 0;
+    "param_launcher_kind" = 0;
+    "param_launcher_style" = 0;
+    "param_launcher_substyle" = 64;
+    "param_runnable_appExtensionHostRunMode" = 0;
+    "param_runnable_productType" = "com.apple.product-type.application";
+    "param_structuredConsoleMode" = 0;
+    "param_testing_launchedForTesting" = 1;
+    "param_testing_suppressSimulatorApp" = 1;
+    "param_testing_usingCLI" = 0;
+    "sdk_canonicalName" = "iphonesimulator18.2";
+    "sdk_osVersion" = "18.2";
+    "sdk_variant" = iphonesimulator;
+}
+2026-07-09 14:20:15.434 xcodebuild[28142:75715] [MT] IDETestOperationsObserverDebug: 206.085 elapsed -- Testing started completed.
+2026-07-09 14:20:15.435 xcodebuild[28142:75715] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-07-09 14:20:15.440 xcodebuild[28142:75715] [MT] IDETestOperationsObserverDebug: 206.085 sec, +206.085 sec -- end
+Testing failed:
+	Simulator device failed to launch dev.mobile.maestro-driver-iosUITests.xctrunner.
+	maestro-driver-iosUITests-Runner encountered an error (Failed to install or launch the test runner. (Underlying Error: Simulator device failed to launch dev.mobile.maestro-driver-iosUITests.xctrunner. The request was denied by service delegate (SBMainWorkspace) for reason: NotFound ("Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard"). (Underlying Error: The request to open "dev.mobile.maestro-driver-iosUITests.xctrunner" failed. The request was denied by service delegate (SBMainWorkspace) for reason: NotFound ("Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard"). (Underlying Error: The operation couldn’t be completed. Application "dev.mobile.maestro-driver-iosUITests.xctrunner" is unknown to FrontBoard.))))
+
+** TEST EXECUTE FAILED **
+

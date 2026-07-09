@@ -1,0 +1,2 @@
+Error from getpwuid_r: 25 (Inappropriate ioctl for device)
+Filtering the log data using "processImagePath CONTAINS "Padaku" OR composedMessage CONTAINS "[PADAKU_DEBUG]""
