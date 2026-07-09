@@ -101,8 +101,12 @@ jobs:
         run: |
           mkdir -p screenshots
           FLOW_TARGET="${{ github.event.inputs.flow_path || '.maestro/padaku/padaku_test.yaml' }}"
+          echo "Starting iOS Simulator console log capture..."
+          xcrun simctl spawn $MAESTRO_DEVICE_UDID log stream --level debug > screenshots/simulator_console.log 2>&1 &
+          LOG_PID=$!
           echo "Executing Maestro flow: $FLOW_TARGET"
-          maestro test "$FLOW_TARGET" --device $MAESTRO_DEVICE_UDID
+          maestro test "$FLOW_TARGET" --device $MAESTRO_DEVICE_UDID || true
+          kill $LOG_PID || true
 
       - name: Upload Screenshot & Log Artifacts
         if: always()
