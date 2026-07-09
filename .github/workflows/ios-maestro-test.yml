@@ -16,6 +16,9 @@ jobs:
     env:
       # Skip JS bundling on CI because main.jsbundle is pre-bundled on Windows and checked in
       SKIP_BUNDLING: true
+      # Increase Maestro iOS XCTest driver startup timeout to 5 minutes (300,000 ms) for cold CI runners
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 300000
+      MAESTRO_CLI_NO_ANALYTICS: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -80,11 +83,14 @@ jobs:
           cp ios/main.jsbundle "$APP_PATH/" || true
           cp -R ios/assets "$APP_PATH/" || true
 
-      - name: Install App onto Simulator
+      - name: Install & Warm Up App on Simulator
         run: |
           APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
           echo "Installing $APP_PATH to simulator $MAESTRO_DEVICE_UDID"
           xcrun simctl install $MAESTRO_DEVICE_UDID "$APP_PATH"
+          echo "Warming up simulator and SpringBoard..."
+          xcrun simctl launch $MAESTRO_DEVICE_UDID com.padaku.app || true
+          sleep 5
 
       - name: Install Maestro CLI
         run: |
