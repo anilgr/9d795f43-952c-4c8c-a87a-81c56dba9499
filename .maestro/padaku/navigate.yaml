@@ -3,6 +3,10 @@ appId: app.puzzle.padaku
 # Setup: Launch app cleanly
 - launchApp:
     appId: app.puzzle.padaku
+    stopApp: true
+
+# Allow window transition & initial React Native JS bundle to render
+- sleep: 3000
 
 # Take screenshot immediately after launch to capture initial screen state
 - takeScreenshot: "screenshots/padaku/00_after_launch"
