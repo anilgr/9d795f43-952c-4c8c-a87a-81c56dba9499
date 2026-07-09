@@ -5,8 +5,9 @@ appId: app.puzzle.padaku
     appId: app.puzzle.padaku
     stopApp: true
 
-# Allow window transition & initial React Native JS bundle to render
-- sleep: 3000
+# Allow window transition animation to finish before initial screenshot
+- waitForAnimationToEnd:
+    timeout: 5000
 
 # Take screenshot immediately after launch to capture initial screen state
 - takeScreenshot: "screenshots/padaku/00_after_launch"
