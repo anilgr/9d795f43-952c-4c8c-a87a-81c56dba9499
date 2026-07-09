@@ -4,6 +4,9 @@ appId: app.puzzle.padaku
 - launchApp:
     appId: app.puzzle.padaku
 
+# Take screenshot immediately after launch to capture initial screen state
+- takeScreenshot: "screenshots/padaku/00_after_launch"
+
 # Verify home screen list cards loaded (wait up to 15s for JS render after cold start)
 - extendedWaitUntil:
     visible: "ಆಡು"
