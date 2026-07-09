@@ -131,6 +131,8 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p maestro_test_logs
           cp -R ~/.maestro/tests/* maestro_test_logs/ || true
+          rm -f screenshots/simulator_console.log maestro_test_logs/**/simulator_console.log || true
+          find screenshots maestro_test_logs -type f -size +50M -delete || true
           git add -f screenshots/ maestro_test_logs/ || true
           if ! git diff --cached --quiet; then
             git commit -m "test(artifacts): update iOS simulator screenshots and logs [skip ci]"
