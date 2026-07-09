@@ -48,6 +48,16 @@ jobs:
           xcrun simctl bootstatus $UDID -b
           echo "MAESTRO_DEVICE_UDID=$UDID" >> $GITHUB_ENV
 
+      - name: Cache CocoaPods and DerivedData
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ios/build
+          key: ${{ runner.os }}-pods-and-build-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-and-build-
+
       - name: Build iOS App for Simulator
         if: env.SKIP_BUNDLING != 'true'
         run: |
@@ -59,6 +69,9 @@ jobs:
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
+            ONLY_ACTIVE_ARCH=YES \
+            EXCLUDED_ARCHS=x86_64 \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             build
 
       - name: Build iOS App without JS Bundling (Pre-bundled)
@@ -73,6 +86,9 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
             SKIP_BUNDLING=true \
+            ONLY_ACTIVE_ARCH=YES \
+            EXCLUDED_ARCHS=x86_64 \
+            COMPILER_INDEX_STORE_ENABLE=NO \
             build
           APP_PATH=$(find build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
           echo "Injecting pre-built offline bundle and assets into $APP_PATH..."
