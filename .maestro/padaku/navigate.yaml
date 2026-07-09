@@ -3,6 +3,7 @@ appId: app.puzzle.padaku
 # Setup: Launch app cleanly
 - launchApp:
     appId: app.puzzle.padaku
+    clearState: true
     stopApp: true
 
 # Allow window transition animation to finish before initial screenshot
