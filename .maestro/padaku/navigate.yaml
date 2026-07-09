@@ -6,7 +6,10 @@ appId: app.puzzle.padaku
     permissions:
       notifications: allow
 
-# Verify home screen list cards loaded
+# Verify home screen list cards loaded (wait up to 15s for JS render after cold start)
+- extendedWaitUntil:
+    visible: "ಆಡು"
+    timeout: 15000
 - assertVisible: "ಆಡು"
 - takeScreenshot: "screenshots/padaku/01_home_screen"
 

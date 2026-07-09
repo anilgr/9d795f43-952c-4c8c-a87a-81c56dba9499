@@ -89,7 +89,7 @@ jobs:
           echo "Installing $APP_PATH to simulator $MAESTRO_DEVICE_UDID"
           xcrun simctl install $MAESTRO_DEVICE_UDID "$APP_PATH"
           echo "Warming up simulator and SpringBoard..."
-          xcrun simctl launch $MAESTRO_DEVICE_UDID com.padaku.app || true
+          xcrun simctl launch $MAESTRO_DEVICE_UDID app.puzzle.padaku || true
           sleep 5
 
       - name: Install Maestro CLI
