@@ -14,26 +14,37 @@ jobs:
 
       - name: Configure macOS VNC Server
         run: |
-          sudo sysadminctl -resetPasswordFor runner -newPassword "MacVncPassword123"
+          # Set VNC-level password via kickstart (no user account password needed)
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -allowAccessFor -allUsers -privs -all \
-            -clientopts -setmenuextra -menuextra yes
+            -clientopts -setmenuextra -menuextra yes -setvnclegacy -vnclegacy yes \
+            -setvncpw -vncpw "padaku123"
+          echo "VNC password set to: padaku123"
 
-      - name: Install and Run Ngrok Tunnel
-        env:
-          NGROK_TOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+      - name: Start bore Tunnel (free, no signup)
         run: |
-          brew install ngrok --cask
-          ngrok config add-authtoken "$NGROK_TOKEN"
-          ngrok tcp 5900 --log=stdout > ngrok.log &
-          sleep 8
-          echo "=== NGROK TUNNEL ADDRESS ==="
-          curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; t=json.load(sys.stdin)['tunnels']; print(t[0]['public_url'] if t else 'not ready yet')"
-          echo "============================"
-          echo "Username: runner"
-          echo "Password: MacVncPassword123"
+          # Download bore - free TCP tunnel, no account needed
+          curl -L https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-apple-darwin.tar.gz -o bore.tar.gz
+          tar xzf bore.tar.gz
+          chmod +x bore
+
+          # Start tunnel on VNC port 5900
+          ./bore local 5900 --to bore.pub > bore.log 2>&1 &
+          sleep 5
+
+          echo "=== BORE TUNNEL ADDRESS ==="
+          cat bore.log
+          echo ""
+          echo "Connect using a VNC client to the address shown above"
+          echo "VNC Password: padaku123"
+          echo "==========================="
 
       - name: Keep Runner Alive
         run: |
           echo "VNC server running. Job stays open for 55 minutes."
-          sleep 3300
+          # Print bore address every 5 min as reminder
+          for i in 1 2 3 4 5 6 7 8 9 10 11; do
+            sleep 300
+            echo "--- Still alive (${i}x5 min) ---"
+            cat bore.log | tail -3
+          done
