@@ -1,0 +1,39 @@
+name: Connect to macOS via VNC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  vnc-connect:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure macOS VNC Server
+        run: |
+          sudo dscl . -passwd /Users/runner "MacVncPassword123"
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+            -activate -configure -allowAccessFor -allUsers -privs -all \
+            -clientopts -setmenuextra -menuextra yes
+
+      - name: Install and Run Ngrok Tunnel
+        env:
+          NGROK_TOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+        run: |
+          brew install ngrok --cask
+          ngrok config add-authtoken "$NGROK_TOKEN"
+          ngrok tcp 5900 --log=stdout > ngrok.log &
+          sleep 8
+          echo "=== NGROK TUNNEL ADDRESS ==="
+          curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; t=json.load(sys.stdin)['tunnels']; print(t[0]['public_url'] if t else 'not ready yet')"
+          echo "============================"
+          echo "Username: runner"
+          echo "Password: MacVncPassword123"
+
+      - name: Keep Runner Alive
+        run: |
+          echo "VNC server running. Job stays open for 55 minutes."
+          sleep 3300
