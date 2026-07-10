@@ -14,17 +14,24 @@ jobs:
 
       - name: Configure macOS VNC Server
         run: |
-          # Set VNC-level password via kickstart (no user account password needed)
+          # Set VNC-level password via kickstart (max 8 chars for VNC protocol)
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
             -activate -configure -allowAccessFor -allUsers -privs -all \
             -clientopts -setmenuextra -menuextra yes -setvnclegacy -vnclegacy yes \
-            -setvncpw -vncpw "padaku123"
-          echo "VNC password set to: padaku123"
+            -setvncpw -vncpw "padaku12"
+          echo "VNC password set to: padaku12 (8 chars max for VNC protocol)"
 
       - name: Start bore Tunnel (free, no signup)
         run: |
-          # Download bore - free TCP tunnel, no account needed
-          curl -L https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-apple-darwin.tar.gz -o bore.tar.gz
+          # Detect architecture and download matching bore binary
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            BORE_URL="https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-aarch64-apple-darwin.tar.gz"
+          else
+            BORE_URL="https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-apple-darwin.tar.gz"
+          fi
+          echo "Downloading bore for $ARCH from $BORE_URL"
+          curl -L "$BORE_URL" -o bore.tar.gz
           tar xzf bore.tar.gz
           chmod +x bore
 
@@ -35,16 +42,15 @@ jobs:
           echo "=== BORE TUNNEL ADDRESS ==="
           cat bore.log
           echo ""
-          echo "Connect using a VNC client to the address shown above"
-          echo "VNC Password: padaku123"
+          echo "Connect: bore.pub:<port_above>"
+          echo "VNC Password: padaku12"
           echo "==========================="
 
       - name: Keep Runner Alive
         run: |
           echo "VNC server running. Job stays open for 55 minutes."
-          # Print bore address every 5 min as reminder
           for i in 1 2 3 4 5 6 7 8 9 10 11; do
             sleep 300
             echo "--- Still alive (${i}x5 min) ---"
-            cat bore.log | tail -3
+            tail -3 bore.log
           done
