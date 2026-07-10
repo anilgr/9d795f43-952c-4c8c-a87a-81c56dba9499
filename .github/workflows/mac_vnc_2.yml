@@ -44,9 +44,23 @@ jobs:
           PIN: ${{ github.event.inputs.pin }}
         run: |
           echo "Authenticating Host with Google..."
-          # We evaluate the command provided by Google and append the PIN argument 
-          # so it doesn't get stuck waiting for interactive keyboard input.
-          eval "$CRD_CMD --pin=$PIN"
+          
+          # 1. Extract ONLY the auth code (starts with 4/) from whatever Linux/Windows command you pasted
+          AUTH_CODE=$(echo "$CRD_CMD" | grep -o '4/[a-zA-Z0-9_-]*' | head -n 1)
+          
+          if [ -z "$AUTH_CODE" ]; then
+            echo "Error: Could not find the auth code in your input."
+            exit 1
+          fi
+          
+          echo "Successfully extracted Auth Code: $AUTH_CODE"
+          
+          # 2. Run the actual macOS executable with your code
+          /Library/PrivilegedHelperTools/Google/ChromeRemoteDesktop/Contents/MacOS/remoting_start_host \
+            --code="$AUTH_CODE" \
+            --redirect-url="https://remotedesktop.google.com/_/oauthredirect" \
+            --name="GitHub-macOS-Runner" \
+            --pin="$PIN"
 
       - name: Keep Runner Alive
         run: |
