@@ -1,0 +1,60 @@
+name: Connect to macOS via CRD
+
+on:
+  workflow_dispatch:
+    inputs:
+      crd_command:
+        description: 'Paste the exact macOS Auth command from Google Headless'
+        required: true
+      pin:
+        description: '6-digit PIN to secure the connection'
+        required: true
+        default: '123456'
+
+jobs:
+  crd-connect:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Disable macOS Gatekeeper (Best Effort)
+        run: |
+          # Loosens macOS restrictions to allow the headless agent to hook the display
+          sudo spctl --master-disable || true
+
+      - name: Install Google Chrome & CRD Host
+        run: |
+          echo "Installing Google Chrome..."
+          brew install --cask google-chrome
+          
+          echo "Downloading Chrome Remote Desktop..."
+          curl -L "https://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg" -o crd.dmg
+          hdiutil attach crd.dmg
+          
+          echo "Installing CRD Package..."
+          sudo installer -pkg "/Volumes/Chrome Remote Desktop/Chrome Remote Desktop Host.pkg" -target /
+          hdiutil detach "/Volumes/Chrome Remote Desktop"
+
+      - name: Authenticate & Start CRD
+        env:
+          CRD_CMD: ${{ github.event.inputs.crd_command }}
+          PIN: ${{ github.event.inputs.pin }}
+        run: |
+          echo "Authenticating Host with Google..."
+          # We evaluate the command provided by Google and append the PIN argument 
+          # so it doesn't get stuck waiting for interactive keyboard input.
+          eval "$CRD_CMD --pin=$PIN"
+
+      - name: Keep Runner Alive
+        run: |
+          echo "====================================================="
+          echo "🚀 CRD is running! "
+          echo "Go to https://remotedesktop.google.com/access to connect."
+          echo "This job will stay alive for 55 minutes."
+          echo "====================================================="
+          
+          # Keep the action running so the machine doesn't shut down
+          for i in {1..11}; do
+            sleep 300
+            echo "--- Still alive (${i}x5 min) ---"
+          done
