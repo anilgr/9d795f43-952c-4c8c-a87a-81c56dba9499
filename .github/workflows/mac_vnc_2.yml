@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "Authenticating Host with Google..."
           
-          # 1. Extract ONLY the auth code (starts with 4/) from whatever Linux/Windows command you pasted
+          # 1. Extract ONLY the auth code (starts with 4/)
           AUTH_CODE=$(echo "$CRD_CMD" | grep -o '4/[a-zA-Z0-9_-]*' | head -n 1)
           
           if [ -z "$AUTH_CODE" ]; then
@@ -55,8 +55,19 @@ jobs:
           
           echo "Successfully extracted Auth Code: $AUTH_CODE"
           
-          # 2. Run the actual macOS executable with your code
-          /Library/PrivilegedHelperTools/Google/ChromeRemoteDesktop/Contents/MacOS/remoting_start_host \
+          # 2. Dynamically search for the Mac host executable
+          echo "Locating the CRD executable..."
+          START_HOST=$(find /Library/PrivilegedHelperTools /Applications /opt -name "*start_host*" -type f -perm +111 2>/dev/null | head -n 1)
+          
+          if [ -z "$START_HOST" ]; then
+            echo "Error: Could not find the Chrome Remote Desktop executable."
+            exit 1
+          fi
+          
+          echo "Found CRD host executable at: $START_HOST"
+          
+          # 3. Run the executable with your extracted code
+          "$START_HOST" \
             --code="$AUTH_CODE" \
             --redirect-url="https://remotedesktop.google.com/_/oauthredirect" \
             --name="GitHub-macOS-Runner" \
