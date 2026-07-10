@@ -2,9 +2,12 @@ appId: app.puzzle.padaku
 ---
 # Reusable flow: Dismiss initial Help modal by checking "Don't show again" and tapping OK
 - extendedWaitUntil:
-    visible: "ಮತ್ತೆ ತೋರಿಸಬೇಡ."
+    visible:
+      id: "help-modal-dont-show-again"
     timeout: 25000
-- assertVisible: "ಮತ್ತೆ ತೋರಿಸಬೇಡ."
+- assertVisible:
+    id: "help-modal-dont-show-again"
 - takeScreenshot: "screenshots/padaku/02_help_modal"
-- tapOn: "ಮತ್ತೆ ತೋರಿಸಬೇಡ."
+- tapOn:
+    id: "help-modal-dont-show-again"
 - tapOn: "ಸರಿ"
