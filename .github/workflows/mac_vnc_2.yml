@@ -32,8 +32,11 @@ jobs:
           hdiutil attach crd.dmg
           
           echo "Installing CRD Package..."
-          sudo installer -pkg "/Volumes/Chrome Remote Desktop/Chrome Remote Desktop Host.pkg" -target /
-          hdiutil detach "/Volumes/Chrome Remote Desktop"
+          # Using a wildcard (*) to account for the dynamic version number in the volume name
+          sudo installer -pkg /Volumes/Chrome\ Remote\ Desktop*/Chrome\ Remote\ Desktop\ Host.pkg -target /
+          
+          echo "Cleaning up..."
+          hdiutil detach /Volumes/Chrome\ Remote\ Desktop*
 
       - name: Authenticate & Start CRD
         env:
