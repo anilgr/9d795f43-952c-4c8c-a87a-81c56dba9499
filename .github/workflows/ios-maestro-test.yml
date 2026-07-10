@@ -98,12 +98,19 @@ jobs:
             build
           APP_PATH=$(find build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
           echo "Injecting pre-built offline bundle and assets into $APP_PATH..."
-          cp ios/main.jsbundle "$APP_PATH/" || true
-          cp -R ios/assets "$APP_PATH/" || true
+          cp "$GITHUB_WORKSPACE/ios/main.jsbundle" "$APP_PATH/main.jsbundle"
+          cp -R "$GITHUB_WORKSPACE/ios/assets" "$APP_PATH/" || true
+          ls -lh "$APP_PATH/main.jsbundle"
 
       - name: Install & Warm Up App on Simulator
         run: |
           APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
+          if [ "$SKIP_BUNDLING" = "true" ]; then
+            echo "Verifying pre-built bundle inside $APP_PATH..."
+            cp "$GITHUB_WORKSPACE/ios/main.jsbundle" "$APP_PATH/main.jsbundle"
+            cp -R "$GITHUB_WORKSPACE/ios/assets" "$APP_PATH/" || true
+            ls -lh "$APP_PATH/main.jsbundle"
+          fi
           echo "Installing $APP_PATH to simulator $MAESTRO_DEVICE_UDID"
           xcrun simctl install $MAESTRO_DEVICE_UDID "$APP_PATH"
           echo "Waiting for LaunchServices to register app bundle..."
