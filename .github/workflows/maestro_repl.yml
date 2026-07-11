@@ -44,7 +44,8 @@ jobs:
       - name: Start Services & Expose Remote REPL
         run: |
           echo "====> Starting Maestro Studio..."
-          nohup maestro studio > maestro.log 2>&1 &
+          # Call Maestro using its absolute path to guarantee it is found
+          nohup $HOME/.maestro/bin/maestro studio > maestro.log 2>&1 &
           
           # Give Maestro time to boot, then verify it didn't crash
           sleep 15
@@ -59,13 +60,11 @@ jobs:
           echo "✅ Maestro Studio is running!"
 
           echo "====> Initializing Pinggy Tunnel..."
-          # Using Pinggy for robust WebSocket/HTTP tunneling without auth tokens
           nohup ssh -p 443 -R0:localhost:9999 -o StrictHostKeyChecking=no a.pinggy.io > tunnel.log 2>&1 &
           sleep 5
           
           echo "=========================================================="
           echo "🔗 REPL CONNECTION DETAILS:"
-          # Extract and print the Pinggy URL
           grep -o 'https://[a-zA-Z0-9.-]*\.pinggy\.link' tunnel.log
           echo "=========================================================="
           
