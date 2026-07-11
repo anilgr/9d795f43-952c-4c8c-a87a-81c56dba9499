@@ -1,65 +1,63 @@
-name: Maestro Headless Remote REPL (macOS)
+name: Maestro Headless Remote REPL (iOS Simulator)
 
 on:
   workflow_dispatch:
 
 jobs:
   maestro-repl:
-    # Upgraded to macos-14 to leverage Apple Silicon (M1) for natively fast ARM emulation
+    # Use macOS 14 to get a stable, accelerated runtime context with modern Xcode tools
     runs-on: macos-14
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java & Android SDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
       - name: Install Maestro CLI
         run: |
-          # FIXED: Pointing to the correct installation script endpoint
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          curl -FsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
-      - name: Install Bore via Homebrew (macOS native)
+      - name: Install Bore via Homebrew
         run: |
           brew install bore-cli
 
-      - name: Run Android Emulator (Apple Silicon Accelerated)
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          target: google_apis
-          arch: arm64-v8a # FIXED: Matches the host M1 architecture for native speeds
-          force-avd-creation: false
-          # FIXED: Removed '-gpu swiftshader_indirect' to allow native hardware acceleration
-          emulator-options: -no-window -no-audio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: |
-            echo "====> Emulator is booted and ready on macOS!"
-            
-            # 1. Start Maestro Studio detached in the background
-            echo "====> Starting Maestro Studio..."
-            nohup maestro studio > maestro.log 2>&1 &
-            sleep 10
-            
-            # 2. Expose local port 9999 over bore.pub
-            echo "====> Initializing Bore Tunnel..."
-            nohup bore local 9999 --to bore.pub > bore.log 2>&1 &
-            sleep 5
-            
-            # 3. Print the live tunnel routing mapping to the console logs
-            echo "=========================================================="
-            echo "🔗 REPL CONNECTION DETAILS:"
-            cat bore.log | grep -E "Forwarding|Connected" || cat bore.log
-            echo "=========================================================="
-            
-            # 4. Stay-alive heartbeat loop to prevent runner idle timeouts
-            echo "⏳ Session is live. Keeping runner open for 1 hour..."
-            for i in {1..60}; do
-              echo "Keep-alive heartbeat: ($i/60 minutes elapsed)"
-              sleep 60
-            done
+      - name: Boot iOS Simulator
+        run: |
+          echo "====> Listing available iOS Simulators..."
+          xcrun simctl list devices available
+          
+          # Boot a standard pre-installed runtime target (iPhone 15 is standard on macOS 14 runner images)
+          echo "====> Booting iPhone 15 Simulator..."
+          DEVICE_UUID=$(xcrun simctl list devices | grep -E "iPhone 15 \(" | grep -v "unavailable" | awk -F '[()]' '{print $(NF-1)}' | head -n 1)
+          
+          if [ -z "$DEVICE_UUID" ]; then
+            echo "iPhone 15 not found, falling back to creating a new runtime device target..."
+            DEVICE_UUID=$(xcrun simctl create "Maestro-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-2")
+          fi
+          
+          echo "Booting Device UUID: $DEVICE_UUID"
+          xcrun simctl boot "$DEVICE_UUID"
+          
+          # Wait for the simulator shell environment to cross the ready threshold
+          xcrun simctl bootstatus "$DEVICE_UUID"
+
+      - name: Start Services & Expose Remote REPL
+        run: |
+          echo "====> Starting Maestro Studio..."
+          nohup maestro studio > maestro.log 2>&1 &
+          sleep 10
+          
+          echo "====> Initializing Bore Tunnel..."
+          nohup bore local 9999 --to bore.pub > bore.log 2>&1 &
+          sleep 5
+          
+          echo "=========================================================="
+          echo "🔗 REPL CONNECTION DETAILS:"
+          cat bore.log | grep -E "Forwarding|Connected" || cat bore.log
+          echo "=========================================================="
+          
+          echo "⏳ Session is live. Keeping macOS runner open for 1 hour..."
+          for i in {1..60}; do
+            echo "Keep-alive heartbeat: ($i/60 minutes elapsed)"
+            sleep 60
+          done
