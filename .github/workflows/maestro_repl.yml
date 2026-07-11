@@ -35,18 +35,16 @@ jobs:
           xcrun simctl boot "$DEVICE_UUID"
           xcrun simctl bootstatus "$DEVICE_UUID" -b
           
-          # Export for next step
           echo "DEVICE_UUID=$DEVICE_UUID" >> $GITHUB_ENV
 
       - name: Start Maestro Studio + Pinggy Tunnel
         run: |
           echo "====> Starting Maestro Studio (REPL)..."
           
-          nohup $HOME/.maestro/bin/maestro studio \
-            --host 0.0.0.0 \
-            --device "$DEVICE_UUID" > maestro.log 2>&1 &
+          # Simple command - no unsupported flags
+          nohup $HOME/.maestro/bin/maestro studio > maestro.log 2>&1 &
           
-          echo "Waiting for Maestro Studio to initialize (this may take 20-30s)..."
+          echo "Waiting for Maestro Studio to initialize (20-30s)..."
           sleep 25
           
           echo "====> Maestro Studio Logs:"
@@ -61,7 +59,7 @@ jobs:
             exit 1
           fi
           
-          echo "✅ Maestro Studio is running on 0.0.0.0:9999"
+          echo "✅ Maestro Studio is running!"
           
           echo "====> Starting Pinggy Tunnel..."
           nohup ssh -p 443 -R0:localhost:9999 \
@@ -76,7 +74,7 @@ jobs:
           TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9.-]*\.pinggy\.link' tunnel.log | head -n 1)
           if [ -n "$TUNNEL_URL" ]; then
             echo "$TUNNEL_URL"
-            echo "→ Open this URL in your browser to access Maestro Studio REPL"
+            echo "Open this URL in your browser to access Maestro Studio REPL"
           else
             echo "⚠️ Tunnel URL not found. Raw tunnel log:"
             cat tunnel.log
