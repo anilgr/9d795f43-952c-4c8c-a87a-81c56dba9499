@@ -27,31 +27,40 @@ jobs:
           
           if [ -z "$DEVICE_UUID" ]; then
             echo "iPhone 15 not found, creating new device..."
-            # Try most reliable runtime first
             DEVICE_UUID=$(xcrun simctl create "Maestro-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-5" 2>/dev/null || \
                          xcrun simctl create "Maestro-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-2")
           fi
           
           echo "Booting Device UUID: $DEVICE_UUID"
           xcrun simctl boot "$DEVICE_UUID"
-          xcrun simctl bootstatus "$DEVICE_UUID" -b   # Blocking wait until booted
+          xcrun simctl bootstatus "$DEVICE_UUID" -b
+          
+          # Export for next step
+          echo "DEVICE_UUID=$DEVICE_UUID" >> $GITHUB_ENV
 
       - name: Start Maestro Studio + Pinggy Tunnel
         run: |
           echo "====> Starting Maestro Studio (REPL)..."
-          nohup $HOME/.maestro/bin/maestro studio --host 0.0.0.0 > maestro.log 2>&1 &
           
-          # Wait for startup
-          sleep 15
+          nohup $HOME/.maestro/bin/maestro studio \
+            --host 0.0.0.0 \
+            --device "$DEVICE_UUID" > maestro.log 2>&1 &
+          
+          echo "Waiting for Maestro Studio to initialize (this may take 20-30s)..."
+          sleep 25
           
           echo "====> Maestro Studio Logs:"
           cat maestro.log
           
-          # Verify it's listening
           if ! lsof -i :9999 > /dev/null; then
-            echo "❌ Maestro Studio failed to bind to port 9999. Check logs above."
+            echo "❌ Maestro Studio failed to bind to port 9999."
+            echo "=== FULL LOGS ==="
+            cat maestro.log
+            echo "=== DEVICE STATUS ==="
+            xcrun simctl list devices
             exit 1
           fi
+          
           echo "✅ Maestro Studio is running on 0.0.0.0:9999"
           
           echo "====> Starting Pinggy Tunnel..."
@@ -60,16 +69,16 @@ jobs:
             -o ServerAliveInterval=60 \
             a.pinggy.io > tunnel.log 2>&1 &
           
-          sleep 8
+          sleep 10
           
           echo "=========================================================="
           echo "🔗 REPL CONNECTION DETAILS:"
           TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9.-]*\.pinggy\.link' tunnel.log | head -n 1)
           if [ -n "$TUNNEL_URL" ]; then
             echo "$TUNNEL_URL"
-            echo "Open this URL in your browser to access Maestro Studio REPL"
+            echo "→ Open this URL in your browser to access Maestro Studio REPL"
           else
-            echo "⚠️  Tunnel URL not found. Check tunnel.log below:"
+            echo "⚠️ Tunnel URL not found. Raw tunnel log:"
             cat tunnel.log
           fi
           echo "=========================================================="
