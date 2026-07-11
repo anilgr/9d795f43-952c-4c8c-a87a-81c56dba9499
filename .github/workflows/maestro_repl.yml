@@ -28,7 +28,7 @@ jobs:
           
           # Boot a standard pre-installed runtime target (iPhone 15 is standard on macOS 14 runner images)
           echo "====> Booting iPhone 15 Simulator..."
-          DEVICE_UUID=$(xcrun simctl list devices | grep -E "iPhone 15 \(" | grep -v "unavailable" | awk -F '[()]' '{print $(NF-1)}' | head -n 1)
+          DEVICE_UUID=$(xcrun simctl list devices | grep -E "iPhone 15 \(" | grep -v "unavailable" | grep -oE "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}" | head -n 1)
           
           if [ -z "$DEVICE_UUID" ]; then
             echo "iPhone 15 not found, falling back to creating a new runtime device target..."
