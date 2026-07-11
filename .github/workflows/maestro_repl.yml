@@ -24,7 +24,8 @@ jobs:
 
       - name: Install Bore (Tunneling Tool)
         run: |
-          curl -LO https://github.com
+          # Use lowercase -o to explicitly define the output filename
+          curl -L -o bore-v0.5.2-x86_64-unknown-linux-musl.tar.gz https://github.com
           tar -xf bore-v0.5.2-x86_64-unknown-linux-musl.tar.gz
           sudo mv bore /usr/local/bin/
           rm bore-v0.5.2-x86_64-unknown-linux-musl.tar.gz
