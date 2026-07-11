@@ -1,0 +1,70 @@
+name: Maestro Headless Remote REPL
+
+on:
+  workflow_dispatch: # Allows you to manually trigger this workflow from the GitHub Actions tab
+
+jobs:
+  maestro-repl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java & Android SDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Maestro CLI
+        run: |
+          curl -FsSL "https://mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Install Bore (Tunneling Tool)
+        run: |
+          curl -LO https://github.com
+          tar -xf bore-v0.5.2-x86_64-unknown-linux-musl.tar.gz
+          sudo mv bore /usr/local/bin/
+          rm bore-v0.5.2-x86_64-unknown-linux-musl.tar.gz
+
+      - name: Run Android Emulator (Headless)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu off -no-audio -no-boot-anim -camera-back none
+          disable-animations: true
+          # We launch our background services inside the script block of the emulator runner
+          script: |
+            echo "====> Emulator is booted and ready!"
+            
+            # 1. Build or download your APK here if needed
+            # ./gradlew assembleDebug
+            
+            # 2. Start Maestro Studio in the background
+            echo "====> Starting Maestro Studio..."
+            maestro studio &
+            
+            # Give Maestro a few seconds to boot up
+            sleep 5 
+            
+            # 3. Start Bore tunnel in the background and pipe output to a log file
+            echo "====> Initializing Bore Tunnel..."
+            bore local 9999 --to bore.pub > bore.log 2>&1 &
+            
+            # Give Bore a few seconds to secure the connection and fetch the port
+            sleep 5 
+            
+            # 4. Print the public Bore URL to the GitHub Actions Console
+            echo "=========================================================="
+            echo "🔗 REPL CONNECTION DETAILS:"
+            cat bore.log | grep -E "Forwarding|Connected" || cat bore.log
+            echo "=========================================================="
+            
+            # 5. Keep the GitHub Action alive for 1 hour (3600 seconds) for your REPL session
+            echo "⏳ Keeping runner alive for interactive REPL session..."
+            sleep 3600
