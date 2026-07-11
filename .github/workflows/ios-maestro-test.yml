@@ -1,4 +1,4 @@
-name: Maestro Headless Remote REPL (iOS Simulator)
+name: SHOULD BE REVERTED Maestro Headless Remote REPL (iOS Simulator)
 
 on:
   workflow_dispatch:

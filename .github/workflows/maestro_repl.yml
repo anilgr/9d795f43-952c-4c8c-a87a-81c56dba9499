@@ -6,60 +6,70 @@ on:
 jobs:
   maestro-repl:
     runs-on: macos-14
-    timeout-minutes: 75
+    timeout-minutes: 90
+
+    env:
+      MAESTRO_CLI_NO_ANALYTICS: true
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 300000
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Maestro CLI
+      - name: Install Maestro CLI + Fix PATH
         run: |
           curl -fsSL "https://get.maestro.mobile.dev" | bash
+          
+          # More reliable PATH fix
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.maestro/bin:$PATH"
+          
+          echo "Maestro version:"
+          maestro --version
 
       - name: Boot iOS Simulator
         run: |
-          echo "====> Listing available iOS Simulators..."
+          echo "====> Listing available simulators..."
           xcrun simctl list devices available
           
-          echo "====> Looking for iPhone 15..."
-          DEVICE_UUID=$(xcrun simctl list devices available | grep -E "iPhone 15 \(" | grep -v "unavailable" | grep -oE "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}" | head -n 1)
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 15 \(" | grep -v "unavailable" | grep -oE "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}" | head -n 1)
           
-          if [ -z "$DEVICE_UUID" ]; then
-            echo "iPhone 15 not found, creating new device..."
-            DEVICE_UUID=$(xcrun simctl create "Maestro-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-5" 2>/dev/null || \
-                         xcrun simctl create "Maestro-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-2")
+          if [ -z "$UDID" ]; then
+            echo "Creating iPhone 15 simulator..."
+            UDID=$(xcrun simctl create "Maestro-REPL-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-5" 2>/dev/null || \
+                   xcrun simctl create "Maestro-REPL-iPhone" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-2")
           fi
           
-          echo "Booting Device UUID: $DEVICE_UUID"
-          xcrun simctl boot "$DEVICE_UUID"
-          xcrun simctl bootstatus "$DEVICE_UUID" -b
-          
-          echo "DEVICE_UUID=$DEVICE_UUID" >> $GITHUB_ENV
+          echo "Booting $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          echo "MAESTRO_DEVICE_UDID=$UDID" >> $GITHUB_ENV
 
       - name: Start Maestro Studio + Pinggy Tunnel
         run: |
-          echo "====> Starting Maestro Studio (REPL)..."
+          export PATH="$HOME/.maestro/bin:$PATH"
           
-          # Simple command - no unsupported flags
-          nohup $HOME/.maestro/bin/maestro studio > maestro.log 2>&1 &
+          echo "====> Starting Maestro Studio..."
+          nohup maestro studio --device "$MAESTRO_DEVICE_UDID" > maestro.log 2>&1 &
           
-          echo "Waiting for Maestro Studio to initialize (20-30s)..."
-          sleep 25
+          echo "Waiting 35 seconds for Studio to start..."
+          sleep 35
           
           echo "====> Maestro Studio Logs:"
           cat maestro.log
           
           if ! lsof -i :9999 > /dev/null; then
-            echo "❌ Maestro Studio failed to bind to port 9999."
-            echo "=== FULL LOGS ==="
-            cat maestro.log
-            echo "=== DEVICE STATUS ==="
-            xcrun simctl list devices
-            exit 1
+            echo "Port not ready yet. Waiting longer..."
+            sleep 25
           fi
           
-          echo "✅ Maestro Studio is running!"
+          if lsof -i :9999 > /dev/null; then
+            echo "✅ Maestro Studio is running on port 9999!"
+          else
+            echo "❌ Failed to start Maestro Studio."
+            cat maestro.log
+            exit 1
+          fi
           
           echo "====> Starting Pinggy Tunnel..."
           nohup ssh -p 443 -R0:localhost:9999 \
@@ -70,19 +80,13 @@ jobs:
           sleep 10
           
           echo "=========================================================="
-          echo "🔗 REPL CONNECTION DETAILS:"
+          echo "🔗 REPL CONNECTION URL:"
           TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9.-]*\.pinggy\.link' tunnel.log | head -n 1)
-          if [ -n "$TUNNEL_URL" ]; then
-            echo "$TUNNEL_URL"
-            echo "Open this URL in your browser to access Maestro Studio REPL"
-          else
-            echo "⚠️ Tunnel URL not found. Raw tunnel log:"
-            cat tunnel.log
-          fi
+          echo "${TUNNEL_URL:-Tunnel URL not found}"
           echo "=========================================================="
           
-          echo "⏳ Session is live. Keeping runner alive for ~60 minutes..."
+          echo "Session is live. Keeping alive..."
           for i in {1..60}; do
-            echo "Keep-alive heartbeat: ($i/60 minutes elapsed)"
+            echo "Keep-alive: ($i/60 minutes)"
             sleep 60
           done
