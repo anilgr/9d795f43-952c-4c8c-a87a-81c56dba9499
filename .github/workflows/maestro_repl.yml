@@ -39,33 +39,33 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu off -no-audio -no-boot-anim -camera-back none
           disable-animations: true
-          # We launch our background services inside the script block of the emulator runner
           script: |
-            echo "====> Emulator is booted and ready!"
+            echo "====> Emulator booted successfully!"
             
-            # 1. Build or download your APK here if needed
-            # ./gradlew assembleDebug
-            
-            # 2. Start Maestro Studio in the background
+            # 1. Force Maestro Studio to run detached, sending stdout and stderr to logs
             echo "====> Starting Maestro Studio..."
-            maestro studio &
+            nohup maestro studio > maestro.log 2>&1 &
             
-            # Give Maestro a few seconds to boot up
-            sleep 5 
+            # Give Maestro explicit time to complete startup sequences
+            sleep 10
             
-            # 3. Start Bore tunnel in the background and pipe output to a log file
+            # 2. Start Bore tunnel detached, ensuring it does not catch close signals
             echo "====> Initializing Bore Tunnel..."
-            bore local 9999 --to bore.pub > bore.log 2>&1 &
+            nohup bore local 9999 --to bore.pub > bore.log 2>&1 &
             
-            # Give Bore a few seconds to secure the connection and fetch the port
+            # Give Bore a brief moment to finish handshaking with bore.pub
             sleep 5 
             
-            # 4. Print the public Bore URL to the GitHub Actions Console
+            # 3. Print the live tunnel routing lines
             echo "=========================================================="
             echo "🔗 REPL CONNECTION DETAILS:"
             cat bore.log | grep -E "Forwarding|Connected" || cat bore.log
             echo "=========================================================="
             
-            # 5. Keep the GitHub Action alive for 1 hour (3600 seconds) for your REPL session
-            echo "⏳ Keeping runner alive for interactive REPL session..."
-            sleep 3600
+            # 4. Long sleep loop to safely keep the runner process actively listening
+            echo "⏳ Interactive REPL session live. Keeping runner open..."
+            for i in {1..60}; do
+              echo "Session heartbeat check... ($i/60 minutes elapsed)"
+              sleep 60
+            done
+
