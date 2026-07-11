@@ -1,140 +1,100 @@
-name: "iOS: E2E Tests & Screenshots (Maestro)"
+name: Maestro Headless Remote REPL (iOS Simulator)
 
 on:
-  push:
-    branches: [ master, main ]
   workflow_dispatch:
-    inputs:
-      flow_path:
-        description: "Path to Maestro test or flow file"
-        required: true
-        default: ".maestro/padaku/padaku_test.yaml"
-  pull_request:
-    branches: [ master, main ]
 
 jobs:
-  test_ios_simulator:
+  maestro-repl:
     runs-on: macos-14
+    timeout-minutes: 90
     permissions:
       contents: write
+
     env:
-      # Skip JS bundling on CI because main.jsbundle is pre-bundled on Windows and checked in
-      SKIP_BUNDLING: true
-      # Increase Maestro iOS XCTest driver startup timeout to 5 minutes (300,000 ms) for cold CI runners
-      MAESTRO_DRIVER_STARTUP_TIMEOUT: 300000
       MAESTRO_CLI_NO_ANALYTICS: true
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 300000
+
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Select latest Xcode
-        uses: ./.github/actions/xcode-latest
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: |
-          yarn install --frozen-lockfile
 
       - name: Boot iOS Simulator
         run: |
-          UDID=$(xcrun simctl list devices available | grep -v 'Watch\|TV\|iPad' | grep 'iPhone' | head -n 1 | sed -E 's/.*(([0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12})).*/\1/')
-          echo "Selected iPhone Simulator UDID: $UDID"
-          xcrun simctl boot $UDID || true
-          xcrun simctl bootstatus $UDID -b
+          echo "====> Listing Simulators..."
+          xcrun simctl list devices available
+          
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 15 \(" | grep -v "unavailable" | grep -oE "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}" | head -n 1)
+          
+          if [ -z "$UDID" ]; then
+            echo "Creating new iPhone 15..."
+            UDID=$(xcrun simctl create "Maestro-REPL" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-5" 2>/dev/null || \
+                   xcrun simctl create "Maestro-REPL" "com.apple.CoreSimulator.SimDeviceType.iPhone-15" "com.apple.CoreSimulator.SimRuntime.iOS-17-2")
+          fi
+          
+          echo "Booting simulator: $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
           echo "MAESTRO_DEVICE_UDID=$UDID" >> $GITHUB_ENV
-
-      - name: Cache CocoaPods and DerivedData
-        uses: actions/cache@v4
-        with:
-          path: |
-            ios/Pods
-            ios/build
-          key: ${{ runner.os }}-pods-and-build-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-and-build-
-
-      - name: Install CocoaPods
-        run: |
-          cd $GITHUB_WORKSPACE/ios
-          pod install --repo-update
-
-      - name: Build iOS Release App for Simulator
-        run: |
-          cd $GITHUB_WORKSPACE/ios
-          # Compile Release build specifically for simulator with SKIP_BUNDLING=true
-          # ONLY_ACTIVE_ARCH=YES and EXCLUDED_ARCHS=x86_64 cut build time in half by only building Apple Silicon simulator slice
-          # IPHONEOS_DEPLOYMENT_TARGET=16.0 satisfies Xcode CxxStdlib bridge requirements
-          xcodebuild -workspace Padaku.xcworkspace \
-            -scheme Padaku \
-            -configuration Release \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build \
-            ONLY_ACTIVE_ARCH=YES \
-            EXCLUDED_ARCHS=x86_64 \
-            IPHONEOS_DEPLOYMENT_TARGET=16.0 \
-            build
-
-      - name: Ensure Bundle & Assets inside Simulator App
-        run: |
-          APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
-          echo "Copying offline main.jsbundle and assets directly into $APP_PATH"
-          cp ios/main.jsbundle "$APP_PATH/" || true
-          cp -R ios/assets "$APP_PATH/" || true
-
-      - name: Install & Warm Up App on Simulator
-        run: |
-          APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -n 1)
-          echo "Installing $APP_PATH to simulator $MAESTRO_DEVICE_UDID"
-          xcrun simctl install $MAESTRO_DEVICE_UDID "$APP_PATH"
-          echo "Waiting for LaunchServices to register app bundle..."
-          sleep 5
-          echo "Warming up simulator and SpringBoard..."
-          xcrun simctl launch $MAESTRO_DEVICE_UDID app.puzzle.padaku || true
-          sleep 5
 
       - name: Install Maestro CLI
         run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+          maestro --version
 
-      - name: Run Maestro Tests
+      - name: Start Maestro Studio + Pinggy Tunnel
         run: |
-          mkdir -p screenshots
-          FLOW_TARGET="${{ github.event.inputs.flow_path || '.maestro/padaku/padaku_test.yaml' }}"
-          echo "Starting iOS Simulator console log capture..."
-          xcrun simctl spawn $MAESTRO_DEVICE_UDID log stream --level debug > screenshots/simulator_console.log 2>&1 &
-          LOG_PID=$!
-          echo "Executing Maestro flow: $FLOW_TARGET"
-          maestro test "$FLOW_TARGET" --device $MAESTRO_DEVICE_UDID || true
-          kill $LOG_PID || true
-
-      - name: Upload Screenshot & Log Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-maestro-screenshots-and-logs
-          path: |
-            screenshots/
-            ~/.maestro/tests/
-          retention-days: 7
-
-      - name: Commit & Push Test Artifacts to Repo
-        if: always()
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          mkdir -p maestro_test_logs
-          cp -R ~/.maestro/tests/* maestro_test_logs/ || true
-          rm -f screenshots/simulator_console.log maestro_test_logs/**/simulator_console.log || true
-          find screenshots maestro_test_logs -type f -size +50M -delete || true
-          git add -f screenshots/ maestro_test_logs/ || true
-          if ! git diff --cached --quiet; then
-            git commit -m "test(artifacts): update iOS simulator screenshots and logs [skip ci]"
-            git push origin HEAD:${{ github.ref }} || true
+          echo "====> Starting Maestro Studio REPL..."
+          
+          # Run in background
+          nohup $HOME/.maestro/bin/maestro studio \
+            --device "$MAESTRO_DEVICE_UDID" > maestro.log 2>&1 &
+          
+          echo "Waiting for Studio to start (30-45 seconds)..."
+          sleep 35
+          
+          echo "====> Maestro Studio Logs:"
+          cat maestro.log
+          
+          # Check port
+          if ! lsof -i :9999 > /dev/null; then
+            echo "❌ Failed to start on port 9999. Trying again with longer wait..."
+            pkill -f "maestro studio" || true
+            sleep 5
+            nohup $HOME/.maestro/bin/maestro studio --device "$MAESTRO_DEVICE_UDID" > maestro.log 2>&1 &
+            sleep 45
           fi
+          
+          if lsof -i :9999 > /dev/null; then
+            echo "✅ Maestro Studio is running on port 9999!"
+          else
+            echo "❌ Still failed. Full log:"
+            cat maestro.log
+            exit 1
+          fi
+          
+          echo "====> Starting Pinggy Tunnel..."
+          nohup ssh -p 443 -R0:localhost:9999 \
+            -o StrictHostKeyChecking=no \
+            -o ServerAliveInterval=60 \
+            a.pinggy.io > tunnel.log 2>&1 &
+          
+          sleep 10
+          
+          echo "=========================================================="
+          echo "🔗 REPL CONNECTION DETAILS:"
+          TUNNEL_URL=$(grep -o 'https://[a-zA-Z0-9.-]*\.pinggy\.link' tunnel.log | head -n 1)
+          if [ -n "$TUNNEL_URL" ]; then
+            echo "$TUNNEL_URL"
+            echo "Open the link above in your browser to use Maestro Studio REPL"
+          else
+            echo "Tunnel log:"
+            cat tunnel.log
+          fi
+          echo "=========================================================="
+          
+          echo "⏳ Keeping session alive for 60 minutes..."
+          for i in {1..60}; do
+            echo "Keep-alive: ($i/60)"
+            sleep 60
+          done
