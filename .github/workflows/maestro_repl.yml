@@ -45,15 +45,28 @@ jobs:
         run: |
           echo "====> Starting Maestro Studio..."
           nohup maestro studio > maestro.log 2>&1 &
-          sleep 10
           
-          echo "====> Initializing Bore Tunnel..."
-          nohup bore local 9999 --to bore.pub > bore.log 2>&1 &
+          # Give Maestro time to boot, then verify it didn't crash
+          sleep 15
+          echo "====> Maestro Studio Logs:"
+          cat maestro.log
+          
+          # Check if port 9999 is actually listening
+          if ! lsof -i :9999 > /dev/null; then
+            echo "❌ Maestro Studio failed to bind to port 9999. Check the logs above."
+            exit 1
+          fi
+          echo "✅ Maestro Studio is running!"
+
+          echo "====> Initializing Pinggy Tunnel..."
+          # Using Pinggy for robust WebSocket/HTTP tunneling without auth tokens
+          nohup ssh -p 443 -R0:localhost:9999 -o StrictHostKeyChecking=no a.pinggy.io > tunnel.log 2>&1 &
           sleep 5
           
           echo "=========================================================="
           echo "🔗 REPL CONNECTION DETAILS:"
-          cat bore.log | grep -E "Forwarding|Connected" || cat bore.log
+          # Extract and print the Pinggy URL
+          grep -o 'https://[a-zA-Z0-9.-]*\.pinggy\.link' tunnel.log
           echo "=========================================================="
           
           echo "⏳ Session is live. Keeping macOS runner open for 1 hour..."
