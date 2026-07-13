@@ -21,6 +21,21 @@ jobs:
         run: |
           brew install ngrok
 
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Clone Private Repository and Start Background Build
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git clone https://${GH_PAT}@github.com/anilgr/Padaku.git
+          # Run yarn install + yarn ios in background so ttyd starts immediately
+          # Monitor progress inside the session: tail -f /tmp/build.log
+          nohup bash -c "cd Padaku && yarn install && yarn ios" > /tmp/build.log 2>&1 &
+          echo "🔨 Background build started. Monitor with: tail -f /tmp/build.log"
+
       - name: Start ttyd and Expose Tunnel
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
