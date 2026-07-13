@@ -1,0 +1,59 @@
+name: Debug macOS Runner via Web Browser
+
+on:
+  workflow_dispatch: # Allows manual execution from the GitHub Actions dashboard
+
+jobs:
+  debug-mac-session:
+    runs-on: macos-latest # Tells GitHub to use an Apple Silicon (M1/M2/M3) macOS machine
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install ttyd and trzsz via Homebrew
+        run: |
+          # Homebrew is pre-installed on GitHub macOS runners
+          brew update
+          brew install ttyd trzsz-go
+
+      - name: Install Ngrok Tunnel on Mac
+        run: |
+          brew install ngrok
+
+      - name: Start ttyd and Expose Tunnel
+        env:
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+        run: |
+          # 1. Authenticate Ngrok
+          ngrok config add-authtoken "$NGROK_AUTHTOKEN"
+          
+          # 2. Start ttyd wrapped in trzsz-go (launches macOS zsh shell)
+          # Sets username 'admin' and password 'runnerpass' for security
+          nohup ttyd -p 8080 -c admin:runnerpass trzsz bash > ttyd.log 2>&1 &
+          
+          # 3. Start Ngrok tunnel over port 8080
+          nohup ngrok http 8080 > ngrok.log 2>&1 &
+          
+          # Give processes 5 seconds to bind to ports cleanly
+          sleep 5
+          
+          # 4. Fetch the public Ngrok endpoint to display in pipeline logs
+          PUBLIC_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          echo "=========================================================="
+          echo "🚀 ACCESS YOUR MAC RUNNER TERMINAL HERE:"
+          echo "$PUBLIC_URL"
+          echo "🔐 Credentials -> User: admin | Pass: runnerpass"
+          echo "=========================================================="
+
+      - name: Keep Mac Runner Open (Interactive Loop)
+        run: |
+          echo "🔄 The Mac runner is locked open for debugging."
+          echo "👉 To close the session and stop billing, type: touch /tmp/stop_debug"
+          
+          # Infinite loop scanning for our kill-switch file
+          while [ ! -f /tmp/stop_debug ]; do
+            sleep 5
+          done
+          
+          echo "🛑 Kill switch file detected. Cleaning up Mac runner."
