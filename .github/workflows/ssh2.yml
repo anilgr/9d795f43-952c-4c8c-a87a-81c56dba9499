@@ -30,7 +30,7 @@ jobs:
           
           # 2. Start ttyd wrapped in trzsz-go (launches macOS zsh shell)
           # Sets username 'admin' and password 'runnerpass' for security
-          nohup ttyd -p 8080 -c admin:runnerpass trzsz bash > ttyd.log 2>&1 &
+          nohup ttyd -W -p 8080 -c admin:runnerpass trzsz bash > ttyd.log 2>&1 &
           
           # 3. Start Ngrok tunnel over port 8080
           nohup ngrok http 8080 > ngrok.log 2>&1 &
