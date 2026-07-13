@@ -11,11 +11,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install ttyd and trzsz via Homebrew
+      - name: Install ttyd, lrzsz (Zmodem), and trzsz via Homebrew
         run: |
           # Homebrew is pre-installed on GitHub macOS runners
           brew update
-          brew install ttyd trzsz-go
+          brew install ttyd lrzsz trzsz-go
 
       - name: Install Ngrok Tunnel on Mac
         run: |
@@ -28,9 +28,9 @@ jobs:
           # 1. Authenticate Ngrok
           ngrok config add-authtoken "$NGROK_AUTHTOKEN"
           
-          # 2. Start ttyd wrapped in trzsz-go (launches macOS zsh shell)
+          # 2. Start ttyd with Zmodem (lrzsz) and trzsz enabled
           # Sets username 'admin' and password 'runnerpass' for security
-          nohup ttyd -W -t enableTrzsz=true -p 8080 -c admin:runnerpass trzsz bash > ttyd.log 2>&1 &
+          nohup ttyd -W -t enableZmodem=true -t enableTrzsz=true -p 8080 -c admin:runnerpass trzsz bash > ttyd.log 2>&1 &
           
           # 3. Start Ngrok tunnel over port 8080
           nohup ngrok http 8080 > ngrok.log 2>&1 &
@@ -44,6 +44,8 @@ jobs:
           echo "🚀 ACCESS YOUR MAC RUNNER TERMINAL HERE:"
           echo "$PUBLIC_URL"
           echo "🔐 Credentials -> User: admin | Pass: runnerpass"
+          echo "📥 To download files to your browser via Zmodem: sz <filename>"
+          echo "📤 To upload files from your browser via Zmodem: rz"
           echo "=========================================================="
 
       - name: Keep Mac Runner Open (Interactive Loop)
