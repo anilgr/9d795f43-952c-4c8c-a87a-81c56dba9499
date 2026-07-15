@@ -21,10 +21,26 @@ jobs:
         run: |
           brew install ngrok
 
-      - name: Install Maestro
+      - name: Install Maestro and Setup Helpers
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+          
+          # Setup global 'cap' command to take simulator screenshot and download via Zmodem
+          sudo tee /usr/local/bin/cap > /dev/null << 'EOF'
+          #!/usr/bin/env bash
+          file="${1:-/tmp/sim_cap.png}"
+          xcrun simctl io booted screenshot "$file" && sz "$file"
+          EOF
+          sudo chmod +x /usr/local/bin/cap
+          
+          cat << 'EOF' >> $HOME/.bashrc
+          alias simcap='cap'
+          alias sc='cap'
+          EOF
+          cat << 'EOF' >> $HOME/.bash_profile
+          if [ -f ~/.bashrc ]; then . ~/.bashrc; fi
+          EOF
 
       - name: Clone Private Repository and Start Background Build
         env:
@@ -61,6 +77,7 @@ jobs:
           echo "🚀 ACCESS YOUR MAC RUNNER TERMINAL HERE:"
           echo "$PUBLIC_URL"
           echo "🔐 Credentials -> User: $TTYD_USER | Pass: $TTYD_PASS"
+          echo "📸 To take an iOS screenshot and download via Zmodem: cap (or simcap / sc)"
           echo "📥 To download files to your browser via Zmodem: sz <filename>"
           echo "📤 To upload files from your browser via Zmodem: rz"
           echo "=========================================================="
