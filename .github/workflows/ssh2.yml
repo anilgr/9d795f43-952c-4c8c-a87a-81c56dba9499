@@ -1,7 +1,13 @@
 name: Debug macOS Runner via Web Browser
 
 on:
-  workflow_dispatch: # Allows manual execution from the GitHub Actions dashboard
+  workflow_dispatch:
+    inputs:
+      padaku_branch:
+        description: 'Branch of Padaku repository to clone and build'
+        required: true
+        default: 'master'
+        type: string
 
 jobs:
   debug-mac-session:
@@ -45,12 +51,14 @@ jobs:
       - name: Clone Private Repository and Start Background Build
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+          PADAKU_BRANCH: ${{ inputs.padaku_branch || 'master' }}
         run: |
-          git clone https://${GH_PAT}@github.com/anilgr/Padaku.git
+          echo "Cloning Padaku branch: ${PADAKU_BRANCH}..."
+          git clone -b "${PADAKU_BRANCH}" https://${GH_PAT}@github.com/anilgr/Padaku.git
           # Run yarn install + yarn ios in background so ttyd starts immediately
           # Monitor progress inside the session: tail -f /tmp/build.log
           nohup bash -c "cd Padaku && yarn install && yarn ios" > /tmp/build.log 2>&1 &
-          echo "🔨 Background build started. Monitor with: tail -f /tmp/build.log"
+          echo "🔨 Background build started on branch '${PADAKU_BRANCH}'. Monitor with: tail -f /tmp/build.log"
 
       - name: Start ttyd and Expose Tunnel
         env:
