@@ -3,18 +3,18 @@ name: Debug macOS Runner via Web Browser
 on:
   workflow_dispatch:
     inputs:
-      padaku_branch:
-        description: 'Branch of Padaku repository to clone and build'
-        required: true
-        default: 'master'
-        type: string
-      install_maestro:
-        description: 'Install Maestro CLI and cap screenshot helper'
+      build_padaku:
+        description: 'Clone Padaku repo & start background iOS build'
         required: true
         default: true
         type: boolean
-      build_padaku:
-        description: 'Clone Padaku and start background iOS build'
+      padaku_branch:
+        description: ' ↳ Branch to build (only used if build_padaku above is checked)'
+        required: false
+        default: 'master'
+        type: string
+      install_maestro:
+        description: 'Install Maestro CLI & cap screenshot helper'
         required: true
         default: true
         type: boolean
