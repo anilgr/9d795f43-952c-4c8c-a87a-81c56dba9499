@@ -17,6 +17,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Cache Homebrew Downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: brew-cache-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            brew-cache-${{ runner.os }}-
+
       - name: Install ttyd and lrzsz (Zmodem) via Homebrew
         run: |
           # Homebrew is pre-installed on GitHub macOS runners
@@ -48,13 +56,30 @@ jobs:
           if [ -f ~/.bashrc ]; then . ~/.bashrc; fi
           EOF
 
-      - name: Clone Private Repository and Start Background Build
+      - name: Clone Private Padaku Repository
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           PADAKU_BRANCH: ${{ inputs.padaku_branch || 'master' }}
         run: |
           echo "Cloning Padaku branch: ${PADAKU_BRANCH}..."
           git clone -b "${PADAKU_BRANCH}" https://${GH_PAT}@github.com/anilgr/Padaku.git
+
+      - name: Cache Yarn, node_modules, CocoaPods, and Pods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/yarn
+            Padaku/node_modules
+            ~/Library/Caches/CocoaPods
+            Padaku/ios/Pods
+          key: padaku-deps-${{ runner.os }}-${{ hashFiles('Padaku/yarn.lock', 'Padaku/ios/Podfile.lock') }}
+          restore-keys: |
+            padaku-deps-${{ runner.os }}-
+
+      - name: Start Background Build (Yarn & iOS)
+        env:
+          PADAKU_BRANCH: ${{ inputs.padaku_branch || 'master' }}
+        run: |
           # Run yarn install + yarn ios in background so ttyd starts immediately
           # Monitor progress inside the session: tail -f /tmp/build.log
           nohup bash -c "cd Padaku && yarn install && yarn ios" > /tmp/build.log 2>&1 &
