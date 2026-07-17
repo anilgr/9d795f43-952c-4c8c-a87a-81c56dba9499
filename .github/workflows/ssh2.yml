@@ -100,7 +100,6 @@ jobs:
           echo "🔨 Background build started on branch '${PADAKU_BRANCH}'. Monitor with: tail -f /tmp/build.log"
 
       - name: Start ttyd and Expose Tunnel
-        if: ${{ inputs.install_ttyd || inputs.install_ngrok }}
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
           TTYD_USER: ${{ secrets.TTYD_USER || 'admin' }}
