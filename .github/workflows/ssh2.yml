@@ -45,10 +45,11 @@ jobs:
         run: |
           brew install ngrok
 
-      - name: Install Maestro and Setup Helpers
+      - name: Install Maestro, Antigravity CLI and Setup Helpers
         if: ${{ inputs.install_maestro }}
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
+          curl -fsSL https://antigravity.google/cli/install.sh | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
           
           # Setup global 'cap' command to take simulator screenshot and download via Zmodem
