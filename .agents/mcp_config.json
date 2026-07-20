@@ -3,7 +3,8 @@
     "maestro": {
       "command": "maestro.cmd",
       "args": [
-        "mcp"
+        "mcp",
+        "--viewer-port=8081"
       ]
     }
   }
