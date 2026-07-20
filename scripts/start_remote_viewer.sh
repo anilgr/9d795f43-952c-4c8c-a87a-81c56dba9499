@@ -13,7 +13,7 @@ lsof -ti :8082 | xargs kill -9 2>/dev/null || true
 pkill -f "cloudflared tunnel --url http://localhost:8082" || true
 
 echo "🚀 Launching maestro mcp (Viewer Port 8081)..."
-sleep infinity | maestro mcp --viewer-port=8081 > "$LOG_DIR/mcp.log" 2>&1 &
+nohup bash -c 'sleep infinity | exec maestro mcp --viewer-port=8081' > "$LOG_DIR/mcp.log" 2>&1 &
 MCP_PID=$!
 
 echo "⏳ Waiting for Maestro Viewer on port 8081..."
