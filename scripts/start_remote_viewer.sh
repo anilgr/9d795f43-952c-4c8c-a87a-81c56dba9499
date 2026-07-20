@@ -7,7 +7,7 @@ mkdir -p "$LOG_DIR"
 
 echo "🛑 Cleaning up old viewer, proxy, and cloudflared processes..."
 pkill -f "maestro mcp" || true
-pkill -f "sleep infinity" || true
+pkill -f "sleep 999999" || true
 lsof -ti :8081 | xargs kill -9 2>/dev/null || true
 lsof -ti :8082 | xargs kill -9 2>/dev/null || true
 pkill -f "cloudflared tunnel --url http://localhost:8082" || true
