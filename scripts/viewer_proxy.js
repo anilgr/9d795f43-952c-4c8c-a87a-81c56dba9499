@@ -4,7 +4,7 @@
  */
 const http = require("http");
 
-const STREAM_PORT = parseInt(process.env.STREAM_PORT || "52402", 10);
+let STREAM_PORT = parseInt(process.env.STREAM_PORT || "52402", 10);
 const VIEWER_PORT = parseInt(process.env.VIEWER_PORT || "8081", 10);
 const PROXY_PORT = parseInt(process.env.PROXY_PORT || "8082", 10);
 
@@ -33,9 +33,15 @@ const server = http.createServer((req, res) => {
         let body = "";
         r.on("data", d => body += d);
         r.on("end", () => {
-          const streamRegex = new RegExp(`http://(127\\.0\\.0\\.1|localhost):${STREAM_PORT}`, "g");
-          const viewerRegex = new RegExp(`http://(127\\.0\\.0\\.1|localhost):${VIEWER_PORT}`, "g");
-          let out = body.replace(streamRegex, "").replace(viewerRegex, "");
+          // Detect stream port dynamically if present
+          const portMatch = body.match(/http:\/\/(?:127\.0\.0\.1|localhost):(\d+)\/stream\.mjpeg/);
+          if (portMatch) {
+            STREAM_PORT = parseInt(portMatch[1], 10);
+          }
+          
+          // Replace all local host+port combinations to use relative paths
+          const localUrlRegex = /http:\/\/(?:127\.0\.0\.1|localhost):\d+/g;
+          let out = body.replace(localUrlRegex, "");
           
           delete r.headers["content-length"];
           res.writeHead(r.statusCode, r.headers);
