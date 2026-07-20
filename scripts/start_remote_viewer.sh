@@ -34,13 +34,15 @@ sleep 2
 echo "🌐 Starting Cloudflare Tunnel on port 8082..."
 nohup npx -y cloudflared tunnel --url http://localhost:8082 > "$LOG_DIR/cf.log" 2>&1 &
 
-echo "⏳ Waiting for public Cloudflare URL..."
+echo "⏳ Waiting for public Cloudflare URL (up to 60s)..."
 PUBLIC_URL=""
-for i in {1..15}; do
-  PUBLIC_URL=$(grep -o 'https://[^"]*\.trycloudflare\.com' "$LOG_DIR/cf.log" 2>/dev/null | tail -n 1)
+for i in {1..60}; do
+  PUBLIC_URL=$(grep -oE 'https://[a-zA-Z0-9_-]+\.trycloudflare\.com' "$LOG_DIR/cf.log" 2>/dev/null | tail -n 1)
   if [ -n "$PUBLIC_URL" ]; then
+    echo ""
     break
   fi
+  printf "."
   sleep 1
 done
 
