@@ -7,12 +7,13 @@ mkdir -p "$LOG_DIR"
 
 echo "🛑 Cleaning up old viewer, proxy, and cloudflared processes..."
 pkill -f "maestro mcp" || true
+pkill -f "tail -f /dev/null" || true
 lsof -ti :8081 | xargs kill -9 2>/dev/null || true
 lsof -ti :8082 | xargs kill -9 2>/dev/null || true
 pkill -f "cloudflared tunnel --url http://localhost:8082" || true
 
 echo "🚀 Launching maestro mcp (Viewer Port 8081)..."
-nohup maestro mcp --viewer-port=8081 > "$LOG_DIR/mcp.log" 2>&1 &
+(tail -f /dev/null | maestro mcp --viewer-port=8081) > "$LOG_DIR/mcp.log" 2>&1 &
 
 echo "⏳ Waiting for Maestro Viewer and MJPEG stream port detection..."
 STREAM_PORT="52402"
