@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "maestro": {
-      "command": "maestro.cmd",
+      "command": "maestro",
       "args": [
         "mcp",
         "--viewer-port=8081"
