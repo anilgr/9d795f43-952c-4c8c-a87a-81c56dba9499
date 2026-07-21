@@ -1,0 +1,9 @@
+appId: com.apple.Preferences
+---
+- launchApp
+- tapOn: "General"
+- takeScreenshot: "general_settings.png"
+- tapOn:
+    id: "BackButton"
+- tapOn: "Accessibility"
+- takeScreenshot: "accessibility_settings.png"
