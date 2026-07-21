@@ -112,7 +112,7 @@ jobs:
         run: |
           if [ "${{ inputs.release_build }}" = "true" ]; then
             echo "📦 Running RELEASE build (bundled JS, no Metro)..."
-            nohup bash -c "cd Padaku && yarn install && yarn ios --mode Release" > /tmp/build.log 2>&1 &
+            nohup bash -c "cd Padaku && yarn install && yarn ios --configuration Release" > /tmp/build.log 2>&1 &
           else
             echo "🔧 Running DEBUG build (Metro on port 8085)..."
             nohup bash -c "cd Padaku && yarn install && yarn ios --port 8085" > /tmp/build.log 2>&1 &
