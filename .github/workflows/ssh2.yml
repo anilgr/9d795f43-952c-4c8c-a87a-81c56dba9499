@@ -13,8 +13,8 @@ on:
         required: false
         default: 'master'
         type: string
-      install_maestro:
-        description: 'Install Maestro CLI & cap screenshot helper'
+      install_tools:
+        description: 'Install Maestro CLI, Antigravity CLI & cap screenshot helper'
         required: true
         default: true
         type: boolean
@@ -46,7 +46,7 @@ jobs:
           brew install ngrok
 
       - name: Install Maestro, Antigravity CLI and Setup Helpers
-        if: ${{ inputs.install_maestro }}
+        if: ${{ inputs.install_tools }}
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
           curl -fsSL https://antigravity.google/cli/install.sh | bash
