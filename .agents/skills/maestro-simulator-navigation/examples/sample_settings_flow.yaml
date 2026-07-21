@@ -5,5 +5,7 @@ appId: com.apple.Preferences
 - takeScreenshot: "general_settings.png"
 - tapOn:
     id: "BackButton"
+- waitForVisible:
+    text: "Accessibility"
 - tapOn: "Accessibility"
 - takeScreenshot: "accessibility_settings.png"
