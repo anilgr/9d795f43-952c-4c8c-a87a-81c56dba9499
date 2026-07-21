@@ -95,6 +95,16 @@ jobs:
           restore-keys: |
             padaku-deps-${{ runner.os }}-
 
+      - name: Cache Xcode DerivedData
+        if: ${{ inputs.build_padaku }}
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: padaku-derived-${{ runner.os }}-${{ inputs.release_build && 'release' || 'debug' }}-${{ hashFiles('Padaku/ios/Podfile.lock', 'Padaku/yarn.lock') }}
+          restore-keys: |
+            padaku-derived-${{ runner.os }}-${{ inputs.release_build && 'release' || 'debug' }}-
+            padaku-derived-${{ runner.os }}-
+
       - name: Start Background Build (Yarn & iOS)
         if: ${{ inputs.build_padaku }}
         env:
