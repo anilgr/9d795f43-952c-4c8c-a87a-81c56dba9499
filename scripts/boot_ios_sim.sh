@@ -4,7 +4,7 @@ echo "Fetching available iOS simulators..."
 
 # Get available iPhone/iPad devices
 IFS=$'\n'
-devices=($(xcrun simctl list devices available | grep -iE 'iphone|ipad' | sed -e 's/^[[:space:]]*//'))
+devices=($(xcrun simctl list devices available | awk '/--/ {os=$0; gsub(/-/, "", os); gsub(/^ +| +$/, "", os)} /iPhone|iPad/ {print $0 " [" os "]"}' | sed -e 's/^[[:space:]]*//'))
 
 if [ ${#devices[@]} -eq 0 ]; then
     echo "No available simulators found."
