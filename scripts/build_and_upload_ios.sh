@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "Starting ZMODEM transfer. Please send '.env' and 'key.p8' now..."
+echo "Starting ZMODEM transfer. Please send '.env' and 'app_store_key.p8' now..."
 rz
 
 echo "Moving received files to the Padaku/fastlane folder..."
@@ -19,7 +19,7 @@ else
   exit 1
 fi
 
-mv key.p8 Padaku/fastlane/key.p8
+mv app_store_key.p8 Padaku/fastlane/app_store_key.p8
 
 echo "Navigating into Padaku..."
 cd Padaku
@@ -34,11 +34,11 @@ cd ios
 echo "Starting iOS build process..."
 
 # Build the IPA
-bundle exec fastlane build_ipa auth_key:"fastlane/key.p8" output_directory:"./build" output_name:"app.ipa"
+bundle exec fastlane build_ipa auth_key:"fastlane/app_store_key.p8" output_directory:"./build" output_name:"app.ipa"
 
 echo "Build complete. Starting upload..."
 
 # Upload the IPA to App Store Connect
-bundle exec fastlane upload_ipa auth_key:"fastlane/key.p8" ipa:"./build/app.ipa"
+bundle exec fastlane upload_ipa auth_key:"fastlane/app_store_key.p8" ipa:"./build/app.ipa"
 
 echo "Upload complete!"
