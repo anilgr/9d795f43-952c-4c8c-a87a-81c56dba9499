@@ -1,0 +1,10 @@
+# Secrets and Environment Variables
+.env
+env
+*.p8
+*.jks
+*.keystore
+*.json
+!package.json
+!manifest.json
+secrets/
