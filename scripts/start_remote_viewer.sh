@@ -5,12 +5,12 @@ REPO_DIR="$(cd "$DIR/.." && pwd)"
 LOG_DIR="/tmp/maestro_viewer_logs"
 mkdir -p "$LOG_DIR"
 
-# Read viewer port from mcp_config.json, fallback to 8081
+# Read viewer port from mcp_config.json, fallback to 8082
 MCP_CONFIG="$REPO_DIR/.agents/mcp_config.json"
 if [ -f "$MCP_CONFIG" ] && command -v python3 > /dev/null 2>&1; then
-  VIEWER_PORT=$(python3 -c "import json,sys;c=json.load(open(sys.argv[1]));args=c.get('mcpServers',{}).get('maestro',{}).get('args',[]);print(next((a.split('=')[1] for a in args if a.startswith('--viewer-port')), '8081'))" "$MCP_CONFIG" 2>/dev/null)
+  VIEWER_PORT=$(python3 -c "import json,sys;c=json.load(open(sys.argv[1]));args=c.get('mcpServers',{}).get('maestro',{}).get('args',[]);print(next((a.split('=')[1] for a in args if a.startswith('--viewer-port')), '8082'))" "$MCP_CONFIG" 2>/dev/null)
 else
-  VIEWER_PORT="8081"
+  VIEWER_PORT="8082"
 fi
 
 RESTART_MCP=false
@@ -25,8 +25,8 @@ echo "📋 Using viewer port: $VIEWER_PORT"
 
 # --- Cleanup proxy and tunnel (always) ---
 echo "🛑 Cleaning up old proxy and cloudflared processes..."
-lsof -ti :8082 | xargs kill -9 2>/dev/null || true
-pkill -f "cloudflared tunnel --url http://localhost:8082" || true
+lsof -ti :8083 | xargs kill -9 2>/dev/null || true
+pkill -f "cloudflared tunnel --url http://localhost:8083" || true
 
 # --- MCP Server ---
 if [ "$RESTART_MCP" = true ]; then
@@ -62,13 +62,13 @@ else
 fi
 
 # --- Proxy ---
-echo "🔄 Starting Unified Proxy Server on port 8082..."
-VIEWER_PORT="$VIEWER_PORT" PROXY_PORT="8082" nohup node "$DIR/viewer_proxy.js" > "$LOG_DIR/proxy.log" 2>&1 &
+echo "🔄 Starting Unified Proxy Server on port 8083..."
+VIEWER_PORT="$VIEWER_PORT" PROXY_PORT="8083" nohup node "$DIR/viewer_proxy.js" > "$LOG_DIR/proxy.log" 2>&1 &
 sleep 2
 
 # --- Cloudflare Tunnel ---
-echo "🌐 Starting Cloudflare Tunnel on port 8082..."
-nohup npx -y cloudflared tunnel --url http://localhost:8082 > "$LOG_DIR/cf.log" 2>&1 &
+echo "🌐 Starting Cloudflare Tunnel on port 8083..."
+nohup npx -y cloudflared tunnel --url http://localhost:8083 > "$LOG_DIR/cf.log" 2>&1 &
 
 echo "⏳ Waiting for public Cloudflare URL (up to 60s)..."
 PUBLIC_URL=""

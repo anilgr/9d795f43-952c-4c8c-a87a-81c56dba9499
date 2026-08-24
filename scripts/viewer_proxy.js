@@ -5,8 +5,8 @@
 const http = require("http");
 
 let STREAM_PORT = parseInt(process.env.STREAM_PORT || "52402", 10);
-const VIEWER_PORT = parseInt(process.env.VIEWER_PORT || "8081", 10);
-const PROXY_PORT = parseInt(process.env.PROXY_PORT || "8082", 10);
+const VIEWER_PORT = parseInt(process.env.VIEWER_PORT || "8082", 10);
+const PROXY_PORT = parseInt(process.env.PROXY_PORT || "8083", 10);
 
 const server = http.createServer((req, res) => {
   if (req.url.startsWith("/stream.mjpeg")) {

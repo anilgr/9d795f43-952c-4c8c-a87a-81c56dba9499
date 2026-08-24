@@ -4,7 +4,7 @@
       "command": "maestro",
       "args": [
         "mcp",
-        "--viewer-port=8081"
+        "--viewer-port=8082"
       ]
     }
   }
