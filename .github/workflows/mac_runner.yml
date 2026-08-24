@@ -27,6 +27,8 @@ on:
 jobs:
   debug-mac-session:
     runs-on: macos-latest # Tells GitHub to use an Apple Silicon (M1/M2/M3) macOS machine
+    env:
+      CI: false
 
     steps:
       - name: Checkout Repository
