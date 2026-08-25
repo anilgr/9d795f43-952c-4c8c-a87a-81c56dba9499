@@ -58,6 +58,13 @@ echo "-------------------"
 echo "Installing JS dependencies..."
 cd ..
 yarn install
+
+echo "--- DEBUG NODE AUTOLINKING ---"
+node -v
+node --print "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })" || echo "NODE CMD 1 FAILED"
+node --print "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })" || echo "NODE CMD 2 FAILED"
+echo "------------------------------"
+
 cd android
 
 # Build the AAB
