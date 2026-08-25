@@ -6,23 +6,20 @@ set -e
 echo "Starting ZMODEM transfer. Please send '.env' and 'app_store_key.p8' now..."
 rz
 
-echo "Moving received files to the Padaku/fastlane folder..."
-mkdir -p Padaku/fastlane
+echo "Moving received files to the fastlane folder..."
+mkdir -p fastlane
 
 # Handle cases where the terminal strips the dot and uploads it as 'env'
 if [ -f "env" ]; then
-  mv env Padaku/fastlane/.env
+  mv env fastlane/.env
 elif [ -f ".env" ]; then
-  mv .env Padaku/fastlane/.env
+  mv .env fastlane/.env
 else
   echo "Error: Could not find env or .env file!"
   exit 1
 fi
 
-mv app_store_key.p8 Padaku/fastlane/app_store_key.p8
-
-echo "Navigating into Padaku..."
-cd Padaku
+mv app_store_key.p8 fastlane/app_store_key.p8
 
 echo "Copying fastlane folder into ios directory..."
 mkdir -p ios/fastlane
