@@ -32,12 +32,21 @@ fi
 
 echo "Copying fastlane folder into android directory..."
 mkdir -p android/fastlane
-cp -R fastlane/* android/fastlane/
+cp -R fastlane/. android/fastlane/
 
 echo "Navigating into android..."
 cd android
 
 echo "Starting Android build process..."
+
+# Fix Windows CRLF line endings in the .env file just in case
+tr -d '' < fastlane/.env > fastlane/.env.tmp
+mv fastlane/.env.tmp fastlane/.env
+
+# Explicitly source the .env file to guarantee Fastlane sees the variables
+set -a
+source fastlane/.env
+set +a
 
 # Build the AAB
 bundle exec fastlane android build_aab keystore_path:"fastlane/padaku.jks"

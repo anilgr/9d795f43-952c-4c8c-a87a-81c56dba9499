@@ -23,12 +23,21 @@ mv app_store_key.p8 fastlane/app_store_key.p8
 
 echo "Copying fastlane folder into ios directory..."
 mkdir -p ios/fastlane
-cp -R fastlane/* ios/fastlane/
+cp -R fastlane/. ios/fastlane/
 
 echo "Navigating into ios..."
 cd ios
 
 echo "Starting iOS build process..."
+
+# Fix Windows CRLF line endings in the .env file just in case
+tr -d '' < fastlane/.env > fastlane/.env.tmp
+mv fastlane/.env.tmp fastlane/.env
+
+# Explicitly source the .env file to guarantee Fastlane sees the variables
+set -a
+source fastlane/.env
+set +a
 
 # Build the IPA
 bundle exec fastlane build_ipa auth_key:"fastlane/app_store_key.p8" output_directory:"./build" output_name:"app.ipa"
