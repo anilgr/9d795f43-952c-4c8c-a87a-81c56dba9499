@@ -31,13 +31,19 @@ cd ios
 echo "Starting iOS build process..."
 
 # Fix Windows CRLF line endings in the .env file just in case
-tr -d '' < fastlane/.env > fastlane/.env.tmp
+tr '\r' '\n' < fastlane/.env > fastlane/.env.tmp
 mv fastlane/.env.tmp fastlane/.env
 
 # Explicitly source the .env file to guarantee Fastlane sees the variables
 set -a
 source fastlane/.env
 set +a
+
+echo "Installing JS dependencies and Pods..."
+cd ..
+yarn install
+npx pod-install ios
+cd ios
 
 # Build the IPA
 bundle exec fastlane build_ipa auth_key:"fastlane/app_store_key.p8" output_directory:"./build" output_name:"app.ipa"
