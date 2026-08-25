@@ -67,6 +67,10 @@ echo "------------------------------"
 
 cd android
 
+echo "--- DEBUG GRADLE AUTOLINKING ---"
+./gradlew check --info || echo "GRADLE CHECK FAILED"
+echo "--------------------------------"
+
 # Build the AAB
 bundle exec fastlane android build_aab keystore_path:"fastlane/padaku.jks"
 
