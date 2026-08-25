@@ -40,13 +40,21 @@ cd android
 echo "Starting Android build process..."
 
 # Fix Windows CRLF line endings in the .env file just in case
-tr -d '' < fastlane/.env > fastlane/.env.tmp
+tr -d '
+' < fastlane/.env > fastlane/.env.tmp
 mv fastlane/.env.tmp fastlane/.env
 
 # Explicitly source the .env file to guarantee Fastlane sees the variables
 set -a
 source fastlane/.env
 set +a
+
+echo "--- DEBUG INFO ---"
+echo "Contents of fastlane/.env:"
+cat fastlane/.env
+echo "Environment Variables (grep ANDROID):"
+env | grep ANDROID
+echo "-------------------"
 
 # Build the AAB
 bundle exec fastlane android build_aab keystore_path:"fastlane/padaku.jks"
