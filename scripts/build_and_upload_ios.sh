@@ -21,6 +21,11 @@ fi
 
 mv app_store_key.p8 fastlane/app_store_key.p8
 
+echo "Installing JS dependencies and Pods..."
+yarn install
+npx expo prebuild -p ios
+npx pod-install ios
+
 echo "Copying fastlane folder into ios directory..."
 mkdir -p ios/fastlane
 cp -R fastlane/. ios/fastlane/
@@ -39,11 +44,6 @@ set -a
 source fastlane/.env
 set +a
 
-echo "Installing JS dependencies and Pods..."
-cd ..
-yarn install
-npx pod-install ios
-cd ios
 
 # Build the IPA
 bundle exec fastlane build_ipa auth_key:"fastlane/app_store_key.p8" output_directory:"./build" output_name:"app.ipa"
