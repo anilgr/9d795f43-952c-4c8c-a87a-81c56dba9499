@@ -30,6 +30,12 @@ else
   echo "Warning: No JSON key file found! Upload step will fail."
 fi
 
+echo "Installing JS dependencies..."
+yarn install
+
+echo "Generating Android prebuild..."
+npx expo prebuild -p android
+
 echo "Copying fastlane folder into android directory..."
 mkdir -p android/fastlane
 cp -R fastlane/. android/fastlane/
@@ -48,28 +54,6 @@ set -a
 source fastlane/.env
 set +a
 
-echo "--- DEBUG INFO ---"
-echo "Contents of fastlane/.env:"
-cat fastlane/.env
-echo "Environment Variables (grep ANDROID):"
-env | grep ANDROID
-echo "-------------------"
-
-echo "Installing JS dependencies..."
-cd ..
-yarn install
-
-echo "--- DEBUG NODE AUTOLINKING ---"
-node -v
-echo "Running the exact autolinking command that crashed Gradle:"
-node --no-warnings --eval "require('expo/bin/autolinking')" expo-modules-autolinking react-native-config --platform android --json || echo "CRASHED HERE"
-echo "------------------------------"
-
-cd android
-
-echo "--- DEBUG GRADLE AUTOLINKING ---"
-./gradlew check --info || echo "GRADLE CHECK FAILED"
-echo "--------------------------------"
 
 # Build the AAB
 bundle exec fastlane android build_aab keystore_path:"fastlane/padaku.jks"
