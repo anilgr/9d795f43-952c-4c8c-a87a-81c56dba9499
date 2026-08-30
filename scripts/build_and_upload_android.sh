@@ -56,7 +56,7 @@ set +a
 
 
 # Build the AAB
-bundle exec fastlane android build_aab keystore_path:"fastlane/padaku.jks"
+bundle exec fastlane android build_aab keystore_path:"../fastlane/padaku.jks"
 
 echo "Build complete. Starting upload..."
 
