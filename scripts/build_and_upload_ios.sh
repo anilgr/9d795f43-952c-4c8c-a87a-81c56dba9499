@@ -21,36 +21,43 @@ fi
 
 mv app_store_key.p8 fastlane/app_store_key.p8
 
-echo "Installing JS dependencies and Pods..."
-yarn install
-npx expo prebuild -p ios
-npx pod-install ios
+echo "Uploads complete. Detaching build process to the background..."
+echo "You can safely close this terminal now. Monitor progress with: tail -f /tmp/ios_build.log"
 
-echo "Copying fastlane folder into ios directory..."
-mkdir -p ios/fastlane
-cp -R fastlane/. ios/fastlane/
+{
+  echo "Installing JS dependencies and Pods..."
+  yarn install
+  npx expo prebuild -p ios
+  npx pod-install ios
 
-echo "Navigating into ios..."
-cd ios
+  echo "Copying fastlane folder into ios directory..."
+  mkdir -p ios/fastlane
+  cp -R fastlane/. ios/fastlane/
 
-echo "Starting iOS build process..."
+  echo "Navigating into ios..."
+  cd ios
 
-# Fix Windows CRLF line endings in the .env file just in case
-tr '\r' '\n' < fastlane/.env > fastlane/.env.tmp
-mv fastlane/.env.tmp fastlane/.env
+  echo "Starting iOS build process..."
 
-# Explicitly source the .env file to guarantee Fastlane sees the variables
-set -a
-source fastlane/.env
-set +a
+  # Fix Windows CRLF line endings in the .env file just in case
+  tr '\r' '\n' < fastlane/.env > fastlane/.env.tmp
+  mv fastlane/.env.tmp fastlane/.env
+
+  # Explicitly source the .env file to guarantee Fastlane sees the variables
+  set -a
+  source fastlane/.env
+  set +a
 
 
-# Build the IPA
-bundle exec fastlane build_ipa auth_key:"fastlane/app_store_key.p8" output_directory:"./build" output_name:"app.ipa"
+  # Build the IPA
+  bundle exec fastlane build_ipa auth_key:"fastlane/app_store_key.p8" output_directory:"./build" output_name:"app.ipa"
 
-echo "Build complete. Starting upload..."
+  echo "Build complete. Starting upload..."
 
-# Upload the IPA to App Store Connect
-bundle exec fastlane upload_ipa auth_key:"fastlane/app_store_key.p8" ipa:"./build/app.ipa"
+  # Upload the IPA to App Store Connect
+  bundle exec fastlane upload_ipa auth_key:"fastlane/app_store_key.p8" ipa:"./build/app.ipa"
 
-echo "Upload complete!"
+  echo "Upload complete!"
+} > /tmp/ios_build.log 2>&1 &
+
+disown

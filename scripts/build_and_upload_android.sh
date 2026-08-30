@@ -30,37 +30,44 @@ else
   echo "Warning: No JSON key file found! Upload step will fail."
 fi
 
-echo "Installing JS dependencies..."
-yarn install
+echo "Uploads complete. Detaching build process to the background..."
+echo "You can safely close this terminal now. Monitor progress with: tail -f /tmp/android_build.log"
 
-echo "Generating Android prebuild..."
-npx expo prebuild -p android
+{
+  echo "Installing JS dependencies..."
+  yarn install
 
-echo "Copying fastlane folder into android directory..."
-mkdir -p android/fastlane
-cp -R fastlane/. android/fastlane/
+  echo "Generating Android prebuild..."
+  npx expo prebuild -p android
 
-echo "Navigating into android..."
-cd android
+  echo "Copying fastlane folder into android directory..."
+  mkdir -p android/fastlane
+  cp -R fastlane/. android/fastlane/
 
-echo "Starting Android build process..."
+  echo "Navigating into android..."
+  cd android
 
-# Fix Windows CRLF line endings in the .env file just in case
-tr '\r' '\n' < fastlane/.env > fastlane/.env.tmp
-mv fastlane/.env.tmp fastlane/.env
+  echo "Starting Android build process..."
 
-# Explicitly source the .env file to guarantee Fastlane sees the variables
-set -a
-source fastlane/.env
-set +a
+  # Fix Windows CRLF line endings in the .env file just in case
+  tr '\r' '\n' < fastlane/.env > fastlane/.env.tmp
+  mv fastlane/.env.tmp fastlane/.env
+
+  # Explicitly source the .env file to guarantee Fastlane sees the variables
+  set -a
+  source fastlane/.env
+  set +a
 
 
-# Build the AAB
-bundle exec fastlane android build_aab keystore_path:"../fastlane/padaku.jks"
+  # Build the AAB
+  bundle exec fastlane android build_aab keystore_path:"../fastlane/padaku.jks"
 
-echo "Build complete. Starting upload..."
+  echo "Build complete. Starting upload..."
 
-# Upload the AAB to Google Play Console
-bundle exec fastlane android upload_aab json_key:"fastlane/play_store_key.json"
+  # Upload the AAB to Google Play Console
+  bundle exec fastlane android upload_aab json_key:"fastlane/play_store_key.json"
 
-echo "Upload complete!"
+  echo "Upload complete!"
+} > /tmp/android_build.log 2>&1 &
+
+disown
