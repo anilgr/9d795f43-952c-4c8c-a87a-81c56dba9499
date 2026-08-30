@@ -23,7 +23,7 @@ fi
 mv padaku.jks fastlane/padaku.jks
 
 # Find the JSON key dynamically in case it's named something slightly different
-JSON_FILE=$(ls *.json 2>/dev/null | head -n 1)
+JSON_FILE=$(ls *.json 2>/dev/null | grep -v -E '^(app\.json|package\.json|tsconfig\.json|app\.config\.json)$' | head -n 1)
 if [ -n "$JSON_FILE" ]; then
   mv "$JSON_FILE" fastlane/play_store_key.json
 else
