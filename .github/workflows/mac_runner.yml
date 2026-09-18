@@ -3,13 +3,18 @@ name: Debug macOS Runner via Web Browser
 on:
   workflow_dispatch:
     inputs:
-      build_padaku:
-        description: 'Clone Padaku repo & start background iOS build'
+      clone_padaku:
+        description: 'Clone Padaku repository'
         required: true
         default: true
         type: boolean
+      build_padaku:
+        description: ' ↳ Start background iOS build automatically'
+        required: false
+        default: false
+        type: boolean
       padaku_branch:
-        description: ' ↳ Branch to build (only used if build_padaku above is checked)'
+        description: ' ↳ Branch to clone (only used if clone_padaku is checked)'
         required: false
         default: 'master'
         type: string
@@ -76,7 +81,7 @@ jobs:
           EOF
 
       - name: Clone Private Padaku Repository
-        if: ${{ inputs.build_padaku }}
+        if: ${{ inputs.clone_padaku }}
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           PADAKU_BRANCH: ${{ inputs.padaku_branch || 'master' }}
@@ -85,7 +90,7 @@ jobs:
           git clone -b "${PADAKU_BRANCH}" https://${GH_PAT}@github.com/anilgr/Padaku.git
 
       - name: Cache Yarn, node_modules, CocoaPods, and Pods
-        if: ${{ inputs.build_padaku }}
+        if: ${{ inputs.clone_padaku }}
         uses: actions/cache@v4
         with:
           path: |
@@ -98,7 +103,7 @@ jobs:
             padaku-deps-${{ runner.os }}-
 
       - name: Cache Xcode DerivedData
-        if: ${{ inputs.build_padaku }}
+        if: ${{ inputs.clone_padaku }}
         uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
@@ -108,7 +113,7 @@ jobs:
             padaku-derived-${{ runner.os }}-
 
       - name: Start Background Build (Yarn & iOS)
-        if: ${{ inputs.build_padaku }}
+        if: ${{ inputs.clone_padaku && inputs.build_padaku }}
         env:
           PADAKU_BRANCH: ${{ inputs.padaku_branch || 'master' }}
         run: |
