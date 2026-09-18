@@ -3,6 +3,13 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+AUTO_KILL=false
+for arg in "$@"; do
+  if [ "$arg" == "--auto-kill" ]; then
+    AUTO_KILL=true
+  fi
+done
+
 echo "Starting ZMODEM transfer. Please send '.env' and 'app_store_key.p8' now..."
 rz
 
@@ -57,7 +64,12 @@ echo "You can safely close this terminal now. Monitor progress with: tail -f /tm
   # Upload the IPA to App Store Connect
   bundle exec fastlane upload_ipa auth_key:"fastlane/app_store_key.p8" ipa:"./build/app.ipa"
 
-  echo "Upload complete!"
+  if [ "$AUTO_KILL" = true ]; then
+    echo "Upload complete! Triggering auto-kill switch..."
+    touch /tmp/stop_debug
+  else
+    echo "Upload complete! (Auto-kill disabled, runner remains open)"
+  fi
 } > /tmp/ios_build.log 2>&1 &
 
 disown

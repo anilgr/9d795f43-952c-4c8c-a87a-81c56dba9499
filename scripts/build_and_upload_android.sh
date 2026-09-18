@@ -3,6 +3,13 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+AUTO_KILL=false
+for arg in "$@"; do
+  if [ "$arg" == "--auto-kill" ]; then
+    AUTO_KILL=true
+  fi
+done
+
 echo "Starting ZMODEM transfer."
 echo "Please send '.env', 'padaku.jks', and your Play Store JSON key (e.g. 'play_store_key.json') now..."
 rz
@@ -70,7 +77,12 @@ echo "You can safely close this terminal now. Monitor progress with: tail -f /tm
   # Upload the AAB to Google Play Console
   bundle exec fastlane android upload_aab json_key:"fastlane/play_store_key.json"
 
-  echo "Upload complete!"
+  if [ "$AUTO_KILL" = true ]; then
+    echo "Upload complete! Triggering auto-kill switch..."
+    touch /tmp/stop_debug
+  else
+    echo "Upload complete! (Auto-kill disabled, runner remains open)"
+  fi
 } > /tmp/android_build.log 2>&1 &
 
 disown
