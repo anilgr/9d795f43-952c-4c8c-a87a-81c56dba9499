@@ -1,7 +1,35 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-file="${1:-/tmp/sim_cap.png}"
+AUTO_DOWNLOAD=false
+file="/tmp/sim_cap.png"
+
+for arg in "$@"; do
+  case "$arg" in
+    --auto|-a|--zmodem|-z)
+      AUTO_DOWNLOAD=true
+      ;;
+    -h|--help)
+      echo "Usage: cap.sh [options] [output_file]"
+      echo ""
+      echo "Captures iOS simulator screenshot and generates an instant preview link."
+      echo ""
+      echo "Options:"
+      echo "  -a, --auto, -z, --zmodem   Attempt automatic Zmodem download into browser"
+      echo "  -h, --help                 Show this help message"
+      echo ""
+      echo "Examples:"
+      echo "  cap                                 # Quick screenshot + web preview link"
+      echo "  cap --auto                          # Screenshot + browser auto-download"
+      echo "  cap --auto /tmp/custom_name.png     # Save to custom file + auto-download"
+      exit 0
+      ;;
+    *)
+      file="$arg"
+      ;;
+  esac
+done
+
 echo "📸 Capturing iOS simulator screenshot to $file..."
 
 # 1. Verify a booted simulator exists
@@ -52,3 +80,16 @@ else
   echo "⚠️ Cloud upload failed. File saved locally at: $file"
 fi
 echo "=========================================================="
+
+# If --auto / -a / -z flag is provided, trigger Zmodem transfer
+if [ "$AUTO_DOWNLOAD" = true ]; then
+  if command -v sz > /dev/null 2>&1; then
+    echo "🚀 Triggering browser auto-download via Zmodem (timeout: 10s)..."
+    sz -e -b -t 100 "$file" 2>/dev/null || {
+      echo "⚠️ Zmodem auto-download timed out or was blocked by browser."
+      echo "💡 You can still view/download using the link above."
+    }
+  else
+    echo "⚠️ 'sz' (lrzsz) not installed. Use the download link above."
+  fi
+fi
