@@ -74,13 +74,16 @@ jobs:
           curl -fsSL https://antigravity.google/cli/install.sh | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
           
-          # Setup global 'cap' command from scripts/cap.sh
-          chmod +x scripts/cap.sh
+          # Setup global 'cap' and 'sz.sh' commands from scripts/
+          chmod +x scripts/cap.sh scripts/sz.sh
           sudo cp scripts/cap.sh /usr/local/bin/cap
+          sudo cp scripts/sz.sh /usr/local/bin/sz.sh
+          sudo cp scripts/sz.sh /usr/local/bin/dl
           
           cat << 'EOF' >> $HOME/.bashrc
           alias simcap='cap'
           alias sc='cap'
+          alias szlink='sz.sh'
           EOF
           cat << 'EOF' >> $HOME/.bash_profile
           if [ -f ~/.bashrc ]; then . ~/.bashrc; fi
@@ -155,7 +158,7 @@ jobs:
             echo "$PUBLIC_URL"
             echo "🔐 Credentials -> User: $TTYD_USER | Pass: $TTYD_PASS"
             echo "📸 To take an iOS screenshot & get a direct link: cap (or simcap / sc)"
-            echo "📥 To download files to your browser via Zmodem: sz <filename>"
+            echo "📥 To download files to your browser: sz.sh <filename> (or dl <filename>)"
             echo "📤 To upload files from your browser via Zmodem: rz"
             echo "=========================================================="
           fi
