@@ -65,9 +65,13 @@ echo "You can safely close this terminal now. Monitor progress with: tail -f /tm
   source fastlane/.env
   set +a
 
-  # Expo prebuild overwrites gradle.properties, so we append our higher memory limits
-  # directly to the generated file before building to prevent JVM Metaspace OOMs and daemon restarts.
-  echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> gradle.properties
+  # Ensure Gradle daemon and JVM have sufficient memory for R8 code shrinking and resource optimization
+  export GRADLE_OPTS="-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+UseParallelGC"
+  if grep -q "^org\.gradle\.jvmargs=" gradle.properties; then
+    sed -i '' 's/^org\.gradle\.jvmargs=.*/org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+UseParallelGC/' gradle.properties
+  else
+    echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+UseParallelGC" >> gradle.properties
+  fi
 
   # Build the AAB
   bundle exec fastlane android build_aab keystore_path:"../fastlane/padaku.jks"

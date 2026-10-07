@@ -39,6 +39,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Optimize Runner Memory
+        run: |
+          echo "Disabling Spotlight indexing..."
+          sudo mdutil -a -i off || true
+          echo "Shutting down and erasing pre-warmed iOS Simulators..."
+          xcrun simctl shutdown all || true
+          xcrun simctl erase all || true
+          echo "Purging inactive disk and memory cache..."
+          sudo purge || true
+
       - name: Cache Homebrew Downloads
         uses: actions/cache@v4
         with:
