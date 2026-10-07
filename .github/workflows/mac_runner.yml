@@ -74,7 +74,7 @@ jobs:
           curl -fsSL https://antigravity.google/cli/install.sh | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
           
-          # Setup robust 'cap' command to take simulator screenshot and download via Zmodem
+          # Setup fast & robust 'cap' command to capture simulator screenshot and generate instant preview URL
           sudo tee /usr/local/bin/cap > /dev/null << 'EOF'
           #!/usr/bin/env bash
           file="${1:-/tmp/sim_cap.png}"
@@ -113,16 +113,21 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Screenshot captured ($(du -h "$file" | cut -f1))."
-          echo "🚀 Sending via Zmodem to browser (timeout: 10s)..."
+          filesize=$(du -h "$file" | cut -f1)
+          echo "✅ Screenshot captured ($file, $filesize)."
+          echo "🚀 Generating instant web preview URL..."
 
-          # 4. sz with 10s timeout, binary (-b), escaped control chars (-e)
-          if sz -e -b -t 100 "$file"; then
-            echo "✅ Transfer completed."
+          # Upload to temp.sh for instant browser viewing (bypasses browser WebSocket download blocks)
+          preview_url=$(curl -s -F "file=@$file" https://temp.sh/upload || true)
+
+          echo "=========================================================="
+          if [ -n "$preview_url" ]; then
+            echo "🔗 VIEW SCREENSHOT HERE:"
+            echo "$preview_url"
           else
-            echo "⚠️ Zmodem transfer timed out or was rejected by the browser."
-            echo "💡 Tip: If your browser blocks Zmodem popups, upload via 'transfer.sh' or inspect $file."
+            echo "⚠️ Cloud upload failed. File saved locally at $file"
           fi
+          echo "=========================================================="
           EOF
           sudo chmod +x /usr/local/bin/cap
           
@@ -202,7 +207,7 @@ jobs:
             echo "🚀 ACCESS YOUR MAC RUNNER TERMINAL HERE:"
             echo "$PUBLIC_URL"
             echo "🔐 Credentials -> User: $TTYD_USER | Pass: $TTYD_PASS"
-            echo "📸 To take an iOS screenshot and download via Zmodem: cap (or simcap / sc)"
+            echo "📸 To take an iOS screenshot & get a direct link: cap (or simcap / sc)"
             echo "📥 To download files to your browser via Zmodem: sz <filename>"
             echo "📤 To upload files from your browser via Zmodem: rz"
             echo "=========================================================="
